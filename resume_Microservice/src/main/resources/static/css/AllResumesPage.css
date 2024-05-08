@@ -1,0 +1,30 @@
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+    vertical-align: middle;
+    width: 50px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.carousel-item img {
+    max-width: 100%; /* Максимальная ширина изображения по ширине контейнера */
+    max-height: 300px; /* Максимальная высота изображения */
+    width: auto; /* Автоматическое определение ширины */
+    height: auto; /* Автоматическое определение высоты */
+    margin: auto; /* Центрирование изображений */
+    object-fit: contain; /* Сохранение пропорций изображений */
+}
+
+
+/* Переопределение цвета черной стрелки */
+.black-icon {
+    color: #0062cc;
+}
