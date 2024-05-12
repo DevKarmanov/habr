@@ -26,7 +26,12 @@
             width: 11%;
             margin-top: -3%;
             transform: rotate(29deg);
+            transition: transform 0.3s ease; /* Добавляем плавный переход при изменении transform */
         }
+        .contact-image img:hover {
+            transform: rotate(0deg); /* Поворачиваем логотип на 0 градусов при наведении */
+        }
+
         .contact-form form{
             padding: 14%;
         }

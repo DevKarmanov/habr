@@ -20,6 +20,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/resume_v1")
@@ -74,11 +76,9 @@ public class ResumeController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createResume(Authentication authentication,
-                             @RequestParam(name = "title") String title,
-                             @RequestParam(name = "description") String description,
-                             @RequestParam(name = "images") MultipartFile[] files) {
-
-
+                                               @RequestParam(name = "title") String title,
+                                               @RequestParam(name = "description") String description,
+                                               @RequestParam(name = "images") MultipartFile[] files) {
         try {
             service.createResume(authentication,title,description,files);
             return ResponseEntity.accepted().body("Успешно создано");
@@ -90,4 +90,6 @@ public class ResumeController {
             return ResponseEntity.badRequest().body("Произошла внутрення ошибка сервера. Приносим свои извинения. Вы можете попытаться перезагрузить страницу и предоставить новый список изображений");
         }
     }
+
+
 }

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Отредактируйте карточку</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body{
+            background: linear-gradient(to right, #0072ff, #00c6ff);
+        }
+        .contact-form{
+            background: #fff;
+            margin-top: 10%;
+            margin-bottom: 5%;
+            width: 70%;
+        }
+        .contact-form .form-control{
+            border-radius:1rem;
+        }
+        .contact-image{
+            text-align: center;
+        }
+        .contact-image img{
+            border-radius: 6rem;
+            width: 11%;
+            margin-top: -3%;
+            transform: rotate(29deg);
+            transition: transform 0.3s ease; /* Добавляем плавный переход при изменении transform */
+        }
+        .contact-form form{
+            padding: 14%;
+        }
+        .contact-form form .row{
+            margin-bottom: -7%;
+        }
+        .contact-form h3{
+            margin-top: -10%;
+            text-align: center;
+            color: #0062cc;
+        }
+
+        .contact-image img:hover {
+            transform: rotate(0deg); /* Поворачиваем логотип на 0 градусов при наведении */
+        }
+
+        .contact-form .btnContact {
+            width: 50%;
+            border: none;
+            border-radius: 1rem;
+            padding: 1.5%;
+            background: #dc3545;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+        }
+        .btnContactSubmit
+        {
+            width: 50%;
+            border-radius: 1rem;
+            padding: 1.5%;
+            color: #fff;
+            background-color: #0062cc;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btnContactSubmit.processing {
+            background-color: #ccc; /* Серый цвет */
+            cursor: not-allowed; /* Запрещаем курсору менять форму */
+        }
+
+        .carousel-item img {
+            max-width: 30%; /* Уменьшаем ширину изображения до 50% */
+            max-height: 30%; /* Уменьшаем высоту изображения до 50% */
+            display: block; /* Центрируем изображение по горизонтали */
+            margin: auto; /* Центрируем изображение по вертикали */
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Добавляем тень */
+            border-radius: 5%; /* Добавляем скругленные углы */
+        }
+
+        .carousel-control-prev, .carousel-control-next {
+            color: black; /* Меняем цвет стрелок на черный */
+            width: auto; /* Устанавливаем автоматическую ширину */
+            height: 100%; /* Устанавливаем высоту в 100% */
+            top: -20%;
+        }
+
+        .carousel-control-prev:hover, .carousel-control-next:hover,
+        .carousel-control-prev:active, .carousel-control-next:active,
+        .carousel-control-prev:focus, .carousel-control-next:focus {
+            color: black; /* Меняем цвет стрелок на черный при наведении, активном состоянии и при фокусе */
+        }
+
+        .carousel-control-prev {
+            left: 30%; /* Позиционируем левую стрелку у 25% ширины контейнера */
+        }
+
+        .carousel-control-next {
+            right: 30%; /* Позиционируем правую стрелку у 25% ширины контейнера */
+        }
+
+        /* Стили для заблокированных кнопок */
+        button.disabled {
+            background-color: #e9ecef; /* Серый цвет */
+            color: #6c757d; /* Цвет текста */
+            pointer-events: none; /* Запрет на нажатие */
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container contact-form">
+    <div class="contact-image">
+        <a th:href="@{/api/resume_v1/profile/{name}(name=${PathUserName})}">
+            <img src="/images/logo.ico" alt="Логотип"/>
+        </a>
+        <div class="spinner-border text-success d-none" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+        <div class="row justify-content-center mt-5">
+            <h3 class="mt-2">Давайте изменим объявление</h3>
+            <form id="patchCardForm" th:action="@{/api/resume_v1/profile/{name}/edit/{cardId}/patch(name=${PathUserName},cardId=${cardInfo.id})}" enctype="multipart/form-data">
+                <div class="col-md-12 mb-3">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <p th:if="${errorMessage}" th:text="${errorMessage}" class="error text-danger text-center"></p>
+                    <div class="form-group">
+                        <input type="text" name="title" class="form-control" placeholder="Заголовок" th:value="${cardInfo.title}"/>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <textarea name="description" class="form-control" th:text="${cardInfo.description}" placeholder="Опишите подробно ваш проект и кого хотите найти" style="width: 100%; height: 150px;"></textarea>
+                    </div>
+                </div>
+                <div th:if="${cardInfo.images.size()<4}" class="col-md-12 mb-3 row "> <!-- Обертка для строки -->
+                    <div>Добавьте изображение</div>
+                    <div class="col-md-11 mb-3"> <!-- Обертка для поля загрузки изображений -->
+                        <div class="form-group">
+                            <input type="file" name="images" class="form-control" multiple accept="image/png, image/jpeg">
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-3"> <!-- Обертка для кнопки "Запустить" -->
+                        <div class="form-group">
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rulesWindow">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 text-center">
+                    <div class="form-group">
+                        <button type="submit" name="btnSubmit" class="btnContactSubmit">Сохранить изменения</button>
+                    </div>
+                </div>
+            </form>
+            <div th:if="${!cardInfo.images.isEmpty()}" th:id="'carouselExample' + ${cardInfo.id}" class="carousel slide">
+                <div class="carousel-inner">
+                    <div class="carousel-item active" style="position: relative;">
+                        <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${cardInfo.id}, imageIndex=0)}" class="d-block w-100" alt="Первичное фото карусели" loading="eager">
+                        <form th:action="@{/api/resume_v1/profile/{name}/edit/{cardId}/delete(name=${PathUserName},cardId=${cardInfo.id})}" id="deleteFirstImageInForm">
+                            <input type="hidden" name="imageIndex" th:value="${cardInfo.images.get(0).id}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;"><i class="bi bi-trash-fill"></i></button>
+                        </form>
+                    </div>
+                    <div th:each="image, imageIndex : ${cardInfo.images}" class="carousel-item" th:unless="${imageIndex.index == 0}" style="position: relative;">
+                        <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${cardInfo.id}, imageIndex=${imageIndex.index})}" class="d-block w-100" alt="Вторичное фото карусели" loading="eager">
+                        <form th:action="@{/api/resume_v1/profile/{name}/edit/{cardId}/delete(name=${PathUserName},cardId=${cardInfo.id})}" th:id="${'deleteOtherImageInForm'+imageIndex.index}">
+                            <input type="hidden" name="imageIndex" th:value="${image.id}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;"><i class="bi bi-trash-fill"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <button th:if="${cardInfo.images.size()>1}" class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExample' + ${cardInfo.id}" data-bs-slide="prev">
+                    <span class="bi bi-caret-left-fill black-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button th:if="${cardInfo.images.size()>1}" class="carousel-control-next" type="button" th:data-bs-target="'#carouselExample' + ${cardInfo.id}" data-bs-slide="next">
+                    <span class="bi bi-caret-right-fill black-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+    <!-- Модальное окно -->
+    <div class="modal fade" id="rulesWindow" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Правила опубликования проекта</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li>Размер фото <strong class="text-danger">не должен превышать 5 мб.</strong></li>
+                        <li>Можно приложить <strong class="text-danger">максимум 4 фото.</strong></li>
+                        <li><p class="text-success">Описание должно быть максимально информативным и развернутым.</p></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Понял</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="/js/changeCardRequest.js"></script>
+<script src="/js/deleteCardImage.js"></script>
+<script>
+    // Функция для отображения спиннера и изменения текста
+    function showSpinnerAndMessage() {
+        // Находим элементы спиннера и заголовка
+        const spinner = document.querySelector('.spinner-border');
+        const h3 = document.querySelector('.contact-form h3');
+        const logo = document.querySelector('.contact-image img');
+
+        // Показываем спиннер и скрываем логотип
+        spinner.classList.remove('d-none');
+        logo.classList.add('d-none');
+
+        // Изменяем текст заголовка
+        h3.textContent = 'Изменения применяются';
+
+        // Блокируем все кнопки на странице, кроме нужной
+        const buttons = document.querySelectorAll('button:not(.allowed-button)');
+        buttons.forEach(button => {
+            button.disabled = true;
+            button.classList.add('disabled');
+        });
+    }
+
+    // Находим все формы на странице
+    const forms = document.querySelectorAll('form');
+
+    // Для каждой формы добавляем обработчик события 'submit'
+    forms.forEach(form => {
+        form.addEventListener('submit', event => {
+            // Предотвращаем отправку формы по умолчанию
+            event.preventDefault();
+
+            // Вызываем функцию для отображения спиннера и изменения текста
+            showSpinnerAndMessage();
+
+            // Здесь можно добавить код для отправки формы на сервер
+            // Например, использовать fetch() или другой метод для отправки данных на сервер
+        });
+    });
+</script>
+
+
+</body>
+</html>

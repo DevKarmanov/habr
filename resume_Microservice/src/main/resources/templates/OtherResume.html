@@ -76,7 +76,7 @@
                 <div class="row row-cols-3 g-4">
                     <div th:if="${ListOfResume.size()>0 && !ListOfResume.equals(null)}" th:each="resume : ${ListOfResume}" class="col">
                         <div class="card h-100 bg-white">
-                            <div th:id="'carouselExample' + ${resume.id}" class="carousel slide">
+                            <div th:if="${resume.images.size()>0}" th:id="'carouselExample' + ${resume.id}" class="carousel slide">
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
                                         <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${resume.id}, imageIndex=0)}" class="d-block w-100" alt="Первичное фото карусели" loading="eager">

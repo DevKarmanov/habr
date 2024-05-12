@@ -33,6 +33,11 @@ public class ResumeService {
     private final ImageResumeRepo imageResumeRepo;
     private final ImageCompressionService imageCompressionService;
 
+    @Transactional
+    public Resume getResume(Long id){
+        return resumeRepo.findById(id).orElse(null);
+    }
+
     @Transactional(rollbackFor = {ImageTroubleException.class, UsernameNotFoundException.class, IOException.class})
     public void createResume(Authentication authentication, String title, String description, MultipartFile[] files) throws ImageTroubleException, UsernameNotFoundException, IOException {
         Optional<MyUser> opt_user = myUserRepo.findByName(authentication.getName());
@@ -46,8 +51,8 @@ public class ResumeService {
         MyUser user = opt_user.get();
 
         Resume resume = Resume.builder()
-                .title(title)
-                .description(description)
+                .title(title.trim())
+                .description(description.trim())
                 .author(user)
                 .createdAt(LocalDate.now())
                 .build();
@@ -56,6 +61,49 @@ public class ResumeService {
 
         imageSave(files,resume);
 
+    }
+    @Transactional
+    public void deleteResume(long imageId,String pathLogin,Authentication authentication){
+        if (!authentication.getName().equals(pathLogin)){
+            throw new RuntimeException("Вы не имеете права удалять чужие карточки");
+        }
+        Optional<ImageResume> image_opt = imageResumeRepo.findById(imageId);
+        image_opt.ifPresentOrElse(imageResumeRepo::delete,
+                ()->{throw new RuntimeException("Такая карточка не найдена");});
+    }
+    @Transactional
+    public void patchResume(Authentication authentication,String login,Optional<String> title, Optional<String> description, Optional<MultipartFile[]> files, Long cardId) throws ImageTroubleException {
+        if (files.isPresent() && files.get().length>4){
+            throw new ImageTroubleException("Слишком много изображений");
+        }else if (!authentication.getName().equals(login)){
+            throw new RuntimeException("Вы не имеете права изменять чужие публикации");
+        }
+        Optional<Resume> resume_opt = resumeRepo.findById(cardId);
+
+        resume_opt.ifPresent(resume -> {
+            if (title.isPresent() && !title.get().trim().isEmpty()){
+                resume.setTitle(title.get().trim());
+            }
+            if (description.isPresent() && !description.get().trim().isEmpty()){
+                resume.setDescription(description.get().trim());
+            }
+            List<ImageResume> resumes = imageResumeRepo.findByResume(resume);
+            if (files.isPresent() && resumes.size()+files.get().length-1>=4){
+                try {
+                    throw new ImageTroubleException("У вас уже "+resumes.size()+" из 4-х изображений. Добавьте поменьше");
+                } catch (ImageTroubleException e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+            if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0){
+                try {
+                    imageSave(files.get(),resume);
+                } catch (ImageTroubleException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            resumeRepo.save(resume);
+        });
     }
 
     private void imageSave(MultipartFile[] files,Resume resume) throws ImageTroubleException {
