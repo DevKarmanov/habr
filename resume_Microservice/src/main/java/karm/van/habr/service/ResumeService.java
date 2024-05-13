@@ -106,6 +106,12 @@ public class ResumeService {
         });
     }
 
+    @Transactional
+    public void deleteCard(Long cardId){
+        Optional<Resume> resume_opt = resumeRepo.findById(cardId);
+        resume_opt.ifPresentOrElse(resumeRepo::delete,()->{throw new RuntimeException("Возникла проблема с удалением, проношу свои извинения");});
+    }
+
     private void imageSave(MultipartFile[] files,Resume resume) throws ImageTroubleException {
         ExecutorService executorService = Executors.newFixedThreadPool(files.length);
 

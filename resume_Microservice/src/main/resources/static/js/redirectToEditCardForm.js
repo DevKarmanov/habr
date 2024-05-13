@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Найти все ссылки с классом "btn-white"
-    const editButtons = document.querySelectorAll('.btn-white');
+    // Найти все ссылки с классом "edit-button"
+    const editButtons = document.querySelectorAll('.edit-button');
 
     // Для каждой найденной ссылки добавить обработчик события клика
     editButtons.forEach(function(button) {

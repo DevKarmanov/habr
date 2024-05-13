@@ -5,109 +5,7 @@
     <title>Отредактируйте карточку</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body{
-            background: linear-gradient(to right, #0072ff, #00c6ff);
-        }
-        .contact-form{
-            background: #fff;
-            margin-top: 10%;
-            margin-bottom: 5%;
-            width: 70%;
-        }
-        .contact-form .form-control{
-            border-radius:1rem;
-        }
-        .contact-image{
-            text-align: center;
-        }
-        .contact-image img{
-            border-radius: 6rem;
-            width: 11%;
-            margin-top: -3%;
-            transform: rotate(29deg);
-            transition: transform 0.3s ease; /* Добавляем плавный переход при изменении transform */
-        }
-        .contact-form form{
-            padding: 14%;
-        }
-        .contact-form form .row{
-            margin-bottom: -7%;
-        }
-        .contact-form h3{
-            margin-top: -10%;
-            text-align: center;
-            color: #0062cc;
-        }
-
-        .contact-image img:hover {
-            transform: rotate(0deg); /* Поворачиваем логотип на 0 градусов при наведении */
-        }
-
-        .contact-form .btnContact {
-            width: 50%;
-            border: none;
-            border-radius: 1rem;
-            padding: 1.5%;
-            background: #dc3545;
-            font-weight: 600;
-            color: #fff;
-            cursor: pointer;
-        }
-        .btnContactSubmit
-        {
-            width: 50%;
-            border-radius: 1rem;
-            padding: 1.5%;
-            color: #fff;
-            background-color: #0062cc;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btnContactSubmit.processing {
-            background-color: #ccc; /* Серый цвет */
-            cursor: not-allowed; /* Запрещаем курсору менять форму */
-        }
-
-        .carousel-item img {
-            max-width: 30%; /* Уменьшаем ширину изображения до 50% */
-            max-height: 30%; /* Уменьшаем высоту изображения до 50% */
-            display: block; /* Центрируем изображение по горизонтали */
-            margin: auto; /* Центрируем изображение по вертикали */
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Добавляем тень */
-            border-radius: 5%; /* Добавляем скругленные углы */
-        }
-
-        .carousel-control-prev, .carousel-control-next {
-            color: black; /* Меняем цвет стрелок на черный */
-            width: auto; /* Устанавливаем автоматическую ширину */
-            height: 100%; /* Устанавливаем высоту в 100% */
-            top: -20%;
-        }
-
-        .carousel-control-prev:hover, .carousel-control-next:hover,
-        .carousel-control-prev:active, .carousel-control-next:active,
-        .carousel-control-prev:focus, .carousel-control-next:focus {
-            color: black; /* Меняем цвет стрелок на черный при наведении, активном состоянии и при фокусе */
-        }
-
-        .carousel-control-prev {
-            left: 30%; /* Позиционируем левую стрелку у 25% ширины контейнера */
-        }
-
-        .carousel-control-next {
-            right: 30%; /* Позиционируем правую стрелку у 25% ширины контейнера */
-        }
-
-        /* Стили для заблокированных кнопок */
-        button.disabled {
-            background-color: #e9ecef; /* Серый цвет */
-            color: #6c757d; /* Цвет текста */
-            pointer-events: none; /* Запрет на нажатие */
-        }
-
-    </style>
+    <link rel="stylesheet" href="/css/EditResumePage.css">
 </head>
 <body>
 
@@ -186,24 +84,49 @@
             </div>
         </div>
 
-    <!-- Модальное окно -->
-    <div class="modal fade" id="rulesWindow" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Правила опубликования проекта</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<!-- Модальное окно правил публикации-->
+<div class="modal fade" id="rulesWindow" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Правила опубликования проекта</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li>Размер фото <strong class="text-danger">не должен превышать 5 мб.</strong></li>
+                    <li>Можно приложить <strong class="text-danger">максимум 4 фото.</strong></li>
+                    <li><p class="text-success">Описание должно быть максимально информативным и развернутым.</p></li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Понял</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Модальное окно совета-->
+<div class="modal fade" id="hintModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="hintLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hintLabel">Небольшая рекомендация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Удалять изображения рекомендуется <strong class="text-danger">только после</strong> сохранения данных карточки (если вы их изменяли). Иначе придется вводить изменения <strong class="text-danger">заново</strong>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="" id="disableNotificationCheckbox">
+                    <label class="form-check-label" for="disableNotificationCheckbox">
+                        Отключить это оповещение
+                    </label>
                 </div>
-                <div class="modal-body">
-                    <ul>
-                        <li>Размер фото <strong class="text-danger">не должен превышать 5 мб.</strong></li>
-                        <li>Можно приложить <strong class="text-danger">максимум 4 фото.</strong></li>
-                        <li><p class="text-success">Описание должно быть максимально информативным и развернутым.</p></li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Понял</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Понял</button>
             </div>
         </div>
     </div>
@@ -250,6 +173,29 @@
             // Здесь можно добавить код для отправки формы на сервер
             // Например, использовать fetch() или другой метод для отправки данных на сервер
         });
+    });
+</script>
+<script>
+    // Функция для показа сообщения через модальное окно
+    function showMessage() {
+        // Проверяем, есть ли атрибут "error" в URL-адресе
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('error')) {
+            // Если атрибут "error" отсутствует, то создаем экземпляр модального окна и показываем его
+            const rulesModal = new bootstrap.Modal(document.getElementById('hintModal'));
+            // Проверяем, был ли чекбокс отмечен
+            if (localStorage.getItem('disableNotification') !== 'true') {
+                rulesModal.show();
+            }
+        }
+    }
+
+    // Вызываем функцию для показа модального окна при загрузке страницы
+    showMessage();
+
+    // Слушатель событий для чекбокса
+    document.getElementById('disableNotificationCheckbox').addEventListener('change', function() {
+        localStorage.setItem('disableNotification', this.checked);
     });
 </script>
 

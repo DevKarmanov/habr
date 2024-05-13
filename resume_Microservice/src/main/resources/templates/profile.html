@@ -112,6 +112,7 @@
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="team-tab" role="tabpanel">
                                     <h4 class="card-title mb-4">Team</h4>
+                                    <p th:if="${errorMessage}" th:text="${errorMessage}" class="error text-danger text-center"></p>
                                     <div th:if="${UserInfo.resumes.isEmpty() && UserName.equals(MyUserName)}">
                                         Вы не выложили еще ни одного объявления
                                     </div>
@@ -122,9 +123,18 @@
                                         <div th:each="resume,index : ${UserInfo.resumes}" class="col-xl-4 col-md-6" id="team-1">
                                             <div class="card position-relative">
                                                 <!-- Кнопка для вызова модального окна изменения карточки -->
-                                                <a th:if="${UserName.equals(MyUserName)}" th:data-card-id="${resume.id}" type="button" class="btn btn-white" data-bs-toggle="modal" style="top: 10px; right: 10px; width: 30px; height: 30px; padding: 0;">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
+                                                <div style="display: flex; justify-content: flex-end; align-items: center;">
+                                                    <a th:if="${UserName.equals(MyUserName)}" th:data-card-id="${resume.id}" type="button" class="btn btn-white edit-button" data-bs-toggle="modal" style="width: 25px; height: 25px; padding: 0;">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                    <form th:id="${'deleteCard'+index.index}" th:action="@{/api/resume_v1/profile/{name}/delete(name=${UserName})}" style="margin-left: 10px;">
+                                                        <button th:if="${UserName.equals(MyUserName)}" th:data-card-id="${resume.id}" type="submit" class="btn btn-white" style="width: 25px; height: 25px; padding: 0;">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
+                                                        <input type="hidden" name="cardId" th:value="${resume.id}">
+                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                    </form>
+                                                </div>
                                                 <div class="card-body">
                                                     <div>
                                                         <h5 th:text="${resume.title}" class="mb-1 font-size-17">Marketing</h5>
@@ -190,4 +200,5 @@
 
 </body>
 <script src="/js/redirectToEditCardForm.js"></script>
+<script src="/js/deleteCardRequest.js"></script>
 </html>

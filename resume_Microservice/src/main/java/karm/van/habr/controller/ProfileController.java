@@ -61,6 +61,7 @@ public class ProfileController {
                                                @PathVariable(name = "name") String pathLogin,
                                                Authentication authentication){
         try {
+            if (!pathLogin.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права удалять");}
             log.info("Индекс изображения: "+imageId);
             service.deleteResume(imageId,pathLogin,authentication);
             return ResponseEntity.accepted().body("Успешно создано");
@@ -90,5 +91,20 @@ public class ProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
+    }
+
+    @DeleteMapping("/{name}/delete")
+    public ResponseEntity<String> deleteCard(@PathVariable(name = "name") String pathName,
+                                             @RequestParam(name = "cardId") long cardId,
+                                             Authentication authentication){
+        try {
+            if (!pathName.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права удалять");}
+            log.info("ID карточки: "+cardId);
+            service.deleteCard(cardId);
+            return ResponseEntity.accepted().body("Успешно создано");
+        } catch (Exception e) {
+            log.info(e.getClass()+" "+e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
