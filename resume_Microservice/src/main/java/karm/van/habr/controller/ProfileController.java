@@ -49,6 +49,7 @@ public class ProfileController {
             model.addAttribute("errorMessage",error);
             model.addAttribute("UserInfo",profileService.getUserInfo(authentication.getName()));
             model.addAttribute("MyUserName",authentication.getName());
+            model.addAttribute("UserSettings",profileService.getSettings(name));
             model.addAttribute("PathUserName",name);
             model.addAttribute("cardInfo",service.getResume(cardId));
             service.getAllImages();

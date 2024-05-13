@@ -2,9 +2,11 @@ package karm.van.habr.service;
 
 
 import karm.van.habr.entity.MyUser;
+import karm.van.habr.entity.Settings;
 import karm.van.habr.exceptions.ImageTroubleException;
 import karm.van.habr.exceptions.UserAlreadyCreateException;
 import karm.van.habr.repo.MyUserRepo;
+import karm.van.habr.repo.SettingsRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +26,7 @@ public class UserRegistrationService {
 
     private final MyUserRepo myUserRepo;
     private final ImageCompressionService imageCompressionService;
+    private final SettingsRepo settingsRepo;
 
     @Transactional
     public void saveUser(String userName, String email, String password, MultipartFile file) throws UserAlreadyCreateException, ImageTroubleException {
@@ -54,6 +57,12 @@ public class UserRegistrationService {
                     .build();
 
             myUserRepo.saveAndFlush(myUser);
+
+            Settings settings = new Settings();
+            settings.setUser(myUser);
+            settings.setDontShowHint(false);
+            settingsRepo.save(settings);
+
         } catch (ImageTroubleException | IOException e) {
             log.error("Ошибка при чтении изображения: " + e.getMessage());
             throw new ImageTroubleException("Произошла ошибка с обработкой изображения. Приношу свои извинения. Попробуйте перезагрузить страницу и предоставить другое");
