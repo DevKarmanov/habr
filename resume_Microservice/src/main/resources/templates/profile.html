@@ -74,6 +74,9 @@
                                         <div class="ms-3">
                                             <div>
                                                 <h4 class="card-title mb-2">О себе</h4>
+                                                <a th:if="${UserName.equals(MyUserName)}" th:href="@{/api/resume_v1/profile/{name}/edit-private-information(name=${UserName})}" type="button" class="btn btn-white btn-square position-absolute top-0 end-0 mt-3 me-3 redirect-to-edit">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
                                                 <p th:text="${UserInfo.description}" class="mb-0 text-muted" style="width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                                     Hi I'm Jansh,has been the industry's standard dummy text To an English person alteration text.
                                                 </p>
@@ -111,7 +114,7 @@
                         <div class="card">
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="team-tab" role="tabpanel">
-                                    <h4 class="card-title mb-4">Team</h4>
+                                    <h4 class="card-title mb-4">Проекты</h4>
                                     <p th:if="${errorMessage}" th:text="${errorMessage}" class="error text-danger text-center"></p>
                                     <div th:if="${UserInfo.resumes.isEmpty() && UserName.equals(MyUserName)}">
                                         Вы не выложили еще ни одного объявления

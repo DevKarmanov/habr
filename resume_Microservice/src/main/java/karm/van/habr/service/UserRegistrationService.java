@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +66,7 @@ public class UserRegistrationService {
 
         } catch (ImageTroubleException | IOException e) {
             log.error("Ошибка при чтении изображения: " + e.getMessage());
-            throw new ImageTroubleException("Произошла ошибка с обработкой изображения. Приношу свои извинения. Попробуйте перезагрузить страницу и предоставить другое");
+            throw new ImageTroubleException("Произошла ошибка с обработкой изображения. Приношу свои извинения. Попробуйте предоставить другое");
         }
     }
 
@@ -80,6 +81,11 @@ public class UserRegistrationService {
     public void saveUserDetails(String firstname, String lastname, String description, String country, String jobtitle, String skillsInput, String name) throws UsernameNotFoundException {
         Optional<MyUser> user = myUserRepo.findByName(name);
         user.ifPresentOrElse(my_user -> {
+            if (Stream.of(firstname, lastname, country, description, skillsInput, jobtitle)
+                    .map(String::trim)
+                    .anyMatch(String::isEmpty)) {
+                throw new RuntimeException("Вы ввели что-то некорректно");
+            }
             my_user.setFirstname(firstname);
             my_user.setLastname(lastname);
             my_user.setCountry(country);
@@ -90,5 +96,20 @@ public class UserRegistrationService {
         }, () -> {
             throw new UsernameNotFoundException("Пользователь с таким именем не найден");
         });
+    }
+
+    @Transactional
+    public void patchUserDetails(Optional<String> firstname,Optional<String> lastname,Optional<String> description,
+                                 Optional<String> country,Optional<String> jobTitle,Optional<String> skillsInput,String name){
+        Optional<MyUser> user_opt = myUserRepo.findByName(name);
+        user_opt.ifPresentOrElse(user->{
+            firstname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setFirstname);
+            lastname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setLastname);
+            description.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setDescription);
+            country.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setCountry);
+            jobTitle.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setRoleInCommand);
+            skillsInput.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setSkills);
+            myUserRepo.save(user);
+        },()->{throw new UsernameNotFoundException("Такой пользователь не найден");});
     }
 }
