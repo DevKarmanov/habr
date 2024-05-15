@@ -1,6 +1,7 @@
 package karm.van.habr.service;
 
 
+import jakarta.persistence.RollbackException;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Settings;
 import karm.van.habr.exceptions.ImageTroubleException;
@@ -16,11 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -115,34 +116,41 @@ public class UserRegistrationService {
         user_opt.ifPresentOrElse(user->{
             ExecutorService executor = Executors.newFixedThreadPool(2);
 
-            executor.submit(()->{
-                email.map(String::trim).filter(s -> !s.isEmpty()  && EMAIL_PATTERN.matcher(s).matches()).ifPresent(user::setEmail);
-                firstname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setFirstname);
-                lastname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setLastname);
-                description.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setDescription);
-                country.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setCountry);
-                jobTitle.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setRoleInCommand);
-                skillsInput.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setSkills);
-            });
+            Callable<Void> task1 = () -> {
+                email.map(String::trim).filter(s -> !s.isEmpty() && EMAIL_PATTERN.matcher(s).matches()).ifPresent(user::setEmail);
+                firstname.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setFirstname);
+                lastname.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setLastname);
+                description.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setDescription);
+                country.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setCountry);
+                jobTitle.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setRoleInCommand);
+                skillsInput.map(String::trim).filter(s -> !s.isEmpty()).ifPresent(user::setSkills);
+                return null;
+            };
 
-            executor.submit(()->{
-                if (file.isPresent() && file.get().getSize()>0){
+            Callable<Void> task2 = () -> {
+                if (file.isPresent() && file.get().getSize() > 0) {
                     try {
-                        byte[] imageBytes = imageCompressionService.compressImage(file.get().getBytes(),file.get().getContentType());
+                        byte[] imageBytes = imageCompressionService.compressImage(file.get().getBytes(), file.get().getContentType());
+                        if (imageBytes == null) {
+                            throw new ImageTroubleException();
+                        }
                         user.setProfileImage(imageBytes);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Произошла ошибка из-за которой изображение не сохранилось. Попробуйте позже");
+                    } catch (Exception e) {
+                        throw new RuntimeException();
                     }
-
                 }
-            });
+                return null;
+            };
 
-            executor.shutdown();
+            List<Callable<Void>> tasks = Arrays.asList(task1,task2);
 
             try {
-                executor.awaitTermination(1, TimeUnit.MINUTES); // ожидание завершения всех задач до 1 минуты
-            } catch (InterruptedException e) {
-                // обработка прерывания
+                List<Future<Void>> futures = executor.invokeAll(tasks);
+                for (Future<Void> future : futures){
+                    future.get();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Произошла ошибка с обработкой изображения. Приношу свои извинения. Попробуйте предоставить другое");
             }
 
             myUserRepo.save(user);

@@ -3,6 +3,22 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("informationForm").addEventListener("submit", async function(event) {
         event.preventDefault(); // Предотвращаем отправку формы по умолчанию
 
+        // Получаем файл из input[type=file]
+        const fileInput = document.getElementById("formFileMultiple");
+        const file = fileInput.files[0];
+
+        // Проверяем размер файла
+        if (file && file.size > 5 * 1024 * 1024) { // Если размер файла больше 5 МБ
+            // Получаем сообщение об ошибке
+            const errorMessage = "Файл слишком большой. Максимальный размер файла: 5 МБ.";
+
+            // Добавляем параметр error к текущему URL
+            const url = new URL(window.location.href);
+            url.searchParams.set('error', errorMessage);
+            window.location.href = url.toString();
+            return; // Прекращаем выполнение функции
+        }
+
         try {
             const formData = new FormData(this);
 
