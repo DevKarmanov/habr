@@ -67,7 +67,7 @@
                                         <div class="text-center border-end">
                                             <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar-xxl rounded-circle" alt="">
                                             <h4 th:text="${UserInfo.name}" class="text-primary font-size-20 mt-3 mb-2">Jansh Wells</h4>
-                                            <h5 th:text="${UserInfo.roleInCommand}" class="text-muted font-size-13 mb-0">Web Designer</h5>
+                                            <h5 th:text="${UserInfo.roleInCommand}" class="text-muted font-size-13 mb-2">Web Designer</h5>
                                         </div>
                                     </div><!-- end col -->
                                     <div class="col-md-9">
@@ -81,6 +81,9 @@
                                                     Hi I'm Jansh,has been the industry's standard dummy text To an English person alteration text.
                                                 </p>
                                             </div>
+
+                                            <!-- Добавьте отступ после roleInCommand -->
+                                            <div class="mt-2"></div>
 
                                             <div class="row my-4">
                                                 <div class="col-md-12">

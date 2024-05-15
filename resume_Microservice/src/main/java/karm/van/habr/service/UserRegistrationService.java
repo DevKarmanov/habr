@@ -18,6 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Service
@@ -98,18 +102,60 @@ public class UserRegistrationService {
         });
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = RuntimeException.class)
     public void patchUserDetails(Optional<String> firstname,Optional<String> lastname,Optional<String> description,
-                                 Optional<String> country,Optional<String> jobTitle,Optional<String> skillsInput,String name){
+                                 Optional<String> country,Optional<String> jobTitle,Optional<String> skillsInput,String name,
+                                 Optional<String> newLogin, Optional<String> email, Optional<MultipartFile> file){
+        Pattern EMAIL_PATTERN = Pattern.compile(
+                "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                        + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
+        );
+
         Optional<MyUser> user_opt = myUserRepo.findByName(name);
         user_opt.ifPresentOrElse(user->{
-            firstname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setFirstname);
-            lastname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setLastname);
-            description.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setDescription);
-            country.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setCountry);
-            jobTitle.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setRoleInCommand);
-            skillsInput.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setSkills);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+
+            executor.submit(()->{
+                email.map(String::trim).filter(s -> !s.isEmpty()  && EMAIL_PATTERN.matcher(s).matches()).ifPresent(user::setEmail);
+                firstname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setFirstname);
+                lastname.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setLastname);
+                description.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setDescription);
+                country.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setCountry);
+                jobTitle.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setRoleInCommand);
+                skillsInput.map(String::trim).filter(s->!s.isEmpty()).ifPresent(user::setSkills);
+            });
+
+            executor.submit(()->{
+                if (file.isPresent() && file.get().getSize()>0){
+                    try {
+                        byte[] imageBytes = imageCompressionService.compressImage(file.get().getBytes(),file.get().getContentType());
+                        user.setProfileImage(imageBytes);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Произошла ошибка из-за которой изображение не сохранилось. Попробуйте позже");
+                    }
+
+                }
+            });
+
+            executor.shutdown();
+
+            try {
+                executor.awaitTermination(1, TimeUnit.MINUTES); // ожидание завершения всех задач до 1 минуты
+            } catch (InterruptedException e) {
+                // обработка прерывания
+            }
+
             myUserRepo.save(user);
+
+            if (newLogin.isPresent() && !newLogin.get().trim().isEmpty()) {
+                String newLoginValue = newLogin.get().trim();
+                if (!name.equals(newLoginValue) && myUserRepo.existsByName(newLoginValue)) {
+                    throw new RuntimeException("Логин уже занят, попробуйте другой");
+                }
+                user.setName(newLoginValue);
+                myUserRepo.save(user);
+            }
+
         },()->{throw new UsernameNotFoundException("Такой пользователь не найден");});
     }
 }

@@ -19,10 +19,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 const name = document.querySelector('input[name="PathUserName"]').value;
                 window.location.href = `/api/resume_v1/profile/${name}`;
             } else {
-                // Если статус ответа не 200, получаем текст ошибки из тела ответа
                 const errorMessage = await response.text();
-                // Перенаправляем пользователя на текущую страницу, добавляя атрибут error с текстом ошибки
-                window.location.href = `${window.location.href}?error=${encodeURIComponent(errorMessage)}`;
+                const url = new URL(window.location.href);
+                url.searchParams.set('error', errorMessage);
+                window.location.href = url.toString();
             }
         } catch (error) {
             console.error("Ошибка отправки запроса:", error);

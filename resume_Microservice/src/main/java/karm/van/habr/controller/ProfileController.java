@@ -78,6 +78,7 @@ public class ProfileController {
             model.addAttribute("errorMessage",error);
             model.addAttribute("UserInfo",profileService.getUserInfo(authentication.getName()));
             model.addAttribute("MyUserName",authentication.getName());
+            model.addAttribute("UserSettings",profileService.getSettings(name));
             model.addAttribute("PathUserName",name);
             service.getAllImages();
             return "ChangeInformationAboutMe";
@@ -92,13 +93,16 @@ public class ProfileController {
                                                           @RequestParam(name = "country",required = false) Optional<String> country,
                                                           @RequestParam(name = "jobtitle",required = false) Optional<String> jobtitle,
                                                           @RequestParam(name = "skillsInput",required = false) Optional<String> skillsInput,
+                                                          @RequestParam(name = "login",required = false) Optional<String> newLogin,
+                                                          @RequestParam(name = "email",required = false) Optional<String> email,
+                                                          @RequestParam(name = "userImage",required = false) Optional<MultipartFile> file,
                                                           Authentication authentication){
 
         try {
             log.info("Имя в запросе patch: "+pathLogin);
             log.info("Имя в сессии patch: "+authentication.getName());
             if (!pathLogin.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права менять");}
-            userRegistrationService.patchUserDetails(firstname,lastname,description,country,jobtitle,skillsInput,authentication.getName());
+            userRegistrationService.patchUserDetails(firstname,lastname,description,country,jobtitle,skillsInput,authentication.getName(),newLogin,email,file);
             return ResponseEntity.status(200).body("Успех");
         }catch (Exception e){
             return ResponseEntity.status(400).body(e.getMessage());

@@ -34,10 +34,20 @@
 
         <div class="col-md-7 col-lg-6 ml-auto">
             <div class="row">
-                <form th:action="@{/api/resume_v1/profile/{name}/edit-private-information/patch(name=${PathUserName})}" id="informationForm">
+                <form th:action="@{/api/resume_v1/profile/{name}/edit-private-information/patch(name=${PathUserName})}" id="informationForm" enctype="multipart/form-data">
                     <input type="hidden" name="PathUserName" th:value="${PathUserName}">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <p th:if="${errorMessage}" th:text="${errorMessage}" class="error text-danger text-center"></p>
+
+                    <div class="input-group col-lg-6 mb-4 align-items-center">
+                        <div class="input-group-prepend">
+                                <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+                        </div>
+                        <input th:value="${UserInfo.name}" id="login" type="text" name="login" placeholder="Ваш логин" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
+                    </div>
+
                     <div class="input-group col-lg-6 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
@@ -59,6 +69,15 @@
 
                     <div class="input-group col-lg-12 mb-4">
                         <textarea th:text="${UserInfo.description}" id="description" type="text" name="description" placeholder="Опишите себя" class="form-control bg-white border-left-0 border-md"></textarea>
+                    </div>
+
+                    <div class="input-group col-lg-6 mb-4 align-items-center">
+                        <div class="input-group-prepend">
+                                <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </span>
+                        </div>
+                        <input th:value="${UserInfo.email}" id="email" type="text" name="email" placeholder="Email" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
                     </div>
 
                     <div class="input-group col-lg-12 mb-4 align-items-center">
@@ -91,7 +110,7 @@
                         <input th:value="${UserInfo.roleInCommand}" type="text" id="jobInput" name="jobtitle" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0" placeholder="Введите свою основную роль в команде">
                     </div>
 
-                    <div class="input-group col-lg-12 mb-4 align-items-center">
+                    <div class="input-group col-lg-12 mb-2 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
                                     <i class="bi bi-bookmark-plus-fill"></i>
@@ -100,6 +119,9 @@
                         <input th:value="${UserInfo.skills}" type="text" id="skillsInput" name="skillsInput" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0" placeholder="Java, C++, Python, HTML ">
                         <div class="autocomplete-items"></div>
                     </div>
+
+                    <label for="formFileMultiple" class="form-label">Измените свой аватар</label>
+                    <input class="form-control mb-3" type="file" name="userImage" id="formFileMultiple" accept=".jpg, .jpeg, .png" />
 
                     <div class="row">
                         <div class="col-lg-6 mb-0">
@@ -117,6 +139,79 @@
         </div>
     </div>
 </div>
+
+<!--Модальное окно совета-->
+<div th:if="${!UserSettings.dontShowHint}" class="modal fade" id="hintModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="hintLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hintLabel">Небольшая рекомендация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                При смене логина вам придется <strong class="text-danger">перезайти</strong>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="" id="disableNotificationCheckbox">
+                    <label class="form-check-label"  for="disableNotificationCheckbox">
+                        Отключить подсказки на сайте
+                    </label>
+                    <input type="hidden" name="pathName" th:value="${PathUserName}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Понял</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 <script src="/js/OtherInformationFormChange.js"></script>
+<script>
+    // Функция для показа сообщения через модальное окно
+    function showMessage() {
+        // Проверяем, есть ли атрибут "error" в URL-адресе
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('error')) {
+            // Если атрибут "error" отсутствует, то создаем экземпляр модального окна и показываем его
+            const rulesModal = new bootstrap.Modal(document.getElementById('hintModal'));
+            rulesModal.show();
+        }
+    }
+
+    // Вызываем функцию для показа модального окна при загрузке страницы
+    showMessage();
+</script>
+<script>
+    $(document).ready(function(){
+        $('#hintModal .btn-danger').click(function(e){
+            e.preventDefault();
+            var isChecked = $('#disableNotificationCheckbox').is(':checked');
+            if (!isChecked) {
+                // Если чекбокс не отмечен, прекращаем выполнение функции
+                return;
+            }
+            var pathName = $('input[name="pathName"]').val();
+            var csrfToken = $('input[name="_csrf"]').val();
+            $.ajax({
+                url: '/api/resume_v1/profile/' + pathName + '/set-hint-show',
+                type: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                data: { hintValueSetting: isChecked },
+                success: function(response) {
+                    // Всплывающее окно для успешного ответа
+                    alert("Договорились, больше не покажем👌");
+                },
+                error: function(error) {
+                    // Всплывающее окно для неуспешного ответа
+                    alert("Какая-то ошибка⚠️. Просим вас потерпеть подсказку немного. Приносим свои извинения");
+                }
+            });
+        });
+    });
+
+</script>
 </html>
