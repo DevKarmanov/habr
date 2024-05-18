@@ -1,9 +1,11 @@
 package karm.van.habr.service;
 
+import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Resume;
 import karm.van.habr.exceptions.ImageTroubleException;
+import karm.van.habr.repo.CommentRepo;
 import karm.van.habr.repo.ImageResumeRepo;
 import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.ResumeRepo;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class ResumeService {
     private final MyUserRepo myUserRepo;
     private final ImageResumeRepo imageResumeRepo;
     private final ImageCompressionService imageCompressionService;
+    private final CommentRepo commentRepo;
 
     @Transactional
     public Resume getResume(Long id){
@@ -179,5 +183,12 @@ public class ResumeService {
     //TODO: Разобраться как отсутствие этого бесполезного метода ломает мне программу
     @Transactional
     public List<ImageResume> getAllImages(){return imageResumeRepo.findAll();}
+
+    @Transactional
+    public List<Comment> getCommentsInPost(Long id) {
+        Optional<Resume> resume = resumeRepo.findById(id);
+
+        return resume.map(commentRepo::getCommentByResume).orElse(null);
+    }
 
 }

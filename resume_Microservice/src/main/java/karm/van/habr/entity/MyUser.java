@@ -11,6 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
+
 public class MyUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,4 +51,25 @@ public class MyUser {
 
     @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
     private Settings settings;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
+    @Override
+    public String toString() {
+        return "MyUser{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", description='" + description + '\'' +
+                ", country='" + country + '\'' +
+                ", roleInCommand='" + roleInCommand + '\'' +
+                ", skills='" + skills + '\'' +
+                ", settings=" + settings +
+                '}';
+    }
 }

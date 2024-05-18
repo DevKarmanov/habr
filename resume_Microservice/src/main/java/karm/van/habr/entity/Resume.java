@@ -34,4 +34,7 @@ public class Resume {
     @OneToMany(mappedBy = "resume",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<ImageResume> images;
 
+    @OneToMany(mappedBy = "resume",cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
 }

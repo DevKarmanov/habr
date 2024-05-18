@@ -1,5 +1,6 @@
 package karm.van.habr.controller;
 
+import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.exceptions.ImageTroubleException;
@@ -20,6 +21,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +45,24 @@ public class ResumeController {
         model.addAttribute("UserName",authentication.getName());
         service.getAllImages();
         return "OtherResume";
+    }
+
+    @GetMapping("/user/about/{cardId}")
+    public String aboutCardPage(Model model,
+                                @PathVariable(name = "cardId") Long id,
+                                Authentication authentication,
+                                @RequestParam(name = "error",required = false) String error){
+        List<Comment> AllComments = service.getCommentsInPost(id);
+
+        AllComments.sort(Comparator.comparing(Comment::getCreateTime));
+
+        model.addAttribute("cardInfo",service.getResume(id));
+        model.addAttribute("userName",authentication.getName());
+        model.addAttribute("ListOfComments",AllComments);
+        model.addAttribute("errorMessage",error);
+        service.getAllImages();
+        log.info("Список комментариев:"+AllComments);
+        return "aboutCard";
     }
 
     @GetMapping("/images/{resumeId}/{imageId}")

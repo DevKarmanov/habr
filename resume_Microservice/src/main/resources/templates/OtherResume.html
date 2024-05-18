@@ -46,7 +46,7 @@
                 </ul>
                 <div class="dropdown">
                     <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка" style="max-width: 40px;">
+                        <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка">
                     </a>
                     <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
                         <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
@@ -75,36 +75,38 @@
             <div class="container">
                 <div class="row row-cols-3 g-4">
                     <div th:if="${ListOfResume.size()>0 && !ListOfResume.equals(null)}" th:each="resume : ${ListOfResume}" class="col">
-                        <div class="card h-100 bg-white">
-                            <div th:if="${resume.images.size()>0}" th:id="'carouselExample' + ${resume.id}" class="carousel slide">
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active">
-                                        <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${resume.id}, imageIndex=0)}" class="d-block w-100" alt="Первичное фото карусели" loading="eager">
+                        <a th:href="@{/api/resume_v1/user/about/{cardId}(cardId=${resume.id})}" class="text-decoration-none">
+                            <div class="card h-100 bg-white">
+                                <div th:if="${resume.images.size()>0}" th:id="'carouselExample' + ${resume.id}" class="carousel slide">
+                                    <div class="carousel-inner">
+                                        <div class="carousel-item active">
+                                            <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${resume.id}, imageIndex=0)}" class="d-block w-100 card-img-top rounded-top" alt="Первичное фото карусели" loading="eager">
+                                        </div>
+                                        <div th:each="image, imageIndex : ${resume.images}" class="carousel-item" th:unless="${imageIndex.index == 0}">
+                                            <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${resume.id}, imageIndex=${imageIndex.index})}" class="d-block w-100 card-img-top rounded-top" alt="Вторичное фото карусели" loading="eager">
+                                        </div>
                                     </div>
-                                    <div th:each="image, imageIndex : ${resume.images}" class="carousel-item" th:unless="${imageIndex.index == 0}">
-                                        <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${resume.id}, imageIndex=${imageIndex.index})}" class="d-block w-100" alt="Вторичное фото карусели" loading="eager">
-                                    </div>
+                                    <button th:if="${resume.images.size()>1}" class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExample' + ${resume.id}" data-bs-slide="prev">
+                                        <span class="bi bi-caret-left-fill black-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button th:if="${resume.images.size()>1}" class="carousel-control-next" type="button" th:data-bs-target="'#carouselExample' + ${resume.id}" data-bs-slide="next">
+                                        <span class="bi bi-caret-right-fill black-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
                                 </div>
-                                <button th:if="${resume.images.size()>1}" class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExample' + ${resume.id}" data-bs-slide="prev">
-                                    <span class="bi bi-caret-left-fill black-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button th:if="${resume.images.size()>1}" class="carousel-control-next" type="button" th:data-bs-target="'#carouselExample' + ${resume.id}" data-bs-slide="next">
-                                    <span class="bi bi-caret-right-fill black-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
-                            </div>
 
-                            <div class="card-body">
-                                <h5 th:text="${resume.title}" class="card-title">Card title</h5>
-                                <p th:text="${resume.description}" class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                            </div>
+                                <div class="card-body">
+                                    <h5 th:text="${resume.title}" class="card-title">Card title</h5>
+                                    <p th:text="${resume.description}" class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                </div>
 
-                            <div class="card-footer d-flex justify-content-between align-items-center">
-                                <small th:text="${resume.createdAt}" class="text-muted">Last updated 3 mins ago</small>
-                                <a th:text="${resume.author.name}" th:href="@{/api/resume_v1/profile/{name}(name=${resume.author.name})}" class="link-info text-decoration-none">Author Profile</a>
+                                <div class="card-footer d-flex justify-content-between align-items-center">
+                                    <small th:text="${resume.createdAt}" class="text-muted">Last updated 3 mins ago</small>
+                                    <a th:text="${resume.author.name}" th:href="@{/api/resume_v1/profile/{name}(name=${resume.author.name})}" class="link-info text-decoration-none">Author Profile</a>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -119,7 +121,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
