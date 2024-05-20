@@ -29,10 +29,12 @@ public class LikeService {
         Optional<Resume> resume_opt = resumeRepo.findById(cardId);
 
         user_opt.ifPresentOrElse(user-> resume_opt.ifPresentOrElse(resume -> {
-                LikedResume likedResume = new LikedResume();
-                likedResume.setUser(user);
-                likedResume.setResume(resume);
-                likeRepo.save(likedResume);
+                if (!likeThisPost(cardId,authentication.getName())){
+                    LikedResume likedResume = new LikedResume();
+                    likedResume.setUser(user);
+                    likedResume.setResume(resume);
+                    likeRepo.save(likedResume);
+                }
             },()->{throw new RuntimeException("Такое объявление не найдено");}),
                 ()->{throw new RuntimeException("Такой пользователь не найден");});
     }
