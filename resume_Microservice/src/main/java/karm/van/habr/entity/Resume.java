@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -36,5 +35,8 @@ public class Resume {
 
     @OneToMany(mappedBy = "resume",cascade = CascadeType.ALL)
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL)
+    private List<LikedResume> likedResumes;
 
 }

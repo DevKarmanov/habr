@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (response.ok) {
                 alert('Комментарий успешно опубликован!');
                 form.reset(); // Очищаем форму после успешной отправки
+                location.reload();
             } else {
                 alert('Ошибка: ' + result);
             }

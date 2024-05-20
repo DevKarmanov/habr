@@ -4,6 +4,7 @@ import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.exceptions.ImageTroubleException;
+import karm.van.habr.service.LikeService;
 import karm.van.habr.service.ResumeService;
 import karm.van.habr.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import java.util.Optional;
 public class ResumeController {
     private final ResumeService service;
     private final UserRegistrationService userRegistrationService;
+    private final LikeService likeService;
 
     @GetMapping("/user")
     public String pageForUser(Model model,
@@ -53,6 +55,7 @@ public class ResumeController {
                                 Authentication authentication,
                                 @RequestParam(name = "error",required = false) String error){
         List<Comment> AllComments = service.getCommentsInPost(id);
+        boolean checkLike = likeService.likeThisPost(id,authentication.getName());
 
         AllComments.sort(Comparator.comparing(Comment::getCreateTime));
 
@@ -60,7 +63,9 @@ public class ResumeController {
         model.addAttribute("userName",authentication.getName());
         model.addAttribute("ListOfComments",AllComments);
         model.addAttribute("errorMessage",error);
+        model.addAttribute("likedThisPost",checkLike);
         service.getAllImages();
+        log.info("Лайкал я этот пост? "+checkLike);
         log.info("Список комментариев:"+AllComments);
         return "aboutCard";
     }

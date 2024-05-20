@@ -55,6 +55,9 @@ public class MyUser {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Comment> comments;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<LikedResume> likedResumes;
+
     @Override
     public String toString() {
         return "MyUser{" +

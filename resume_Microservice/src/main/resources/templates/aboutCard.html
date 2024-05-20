@@ -193,9 +193,20 @@
                             GeeksForGeeks is a Computer Science portal for geeks. It contains well written, well thought articles. This platform has been designed for every geek wishing to expand their knowledge, share their knowledge and is ready to grab their dream job. We have millions of articles, live as well as online courses, thousands of tutorials and much more just for the geek inside you.
                         </p>
                         <div class="d-flex justify-content-start align-items-center">
-                            <button type="button" class="btn btn-white text-danger mb-2" id="likeButton">
-                                <i class="bi bi-heart" id="likeIcon"></i>
-                            </button>
+                            <form th:if="${!cardInfo.author.name.equals(userName) && !likedThisPost}" id="addLikeForm">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken">
+                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                <button type="submit" class="btn btn-white text-danger mb-2" id="likeButton">
+                                    <i class="bi bi-heart" id="likeIcon"></i>
+                                </button>
+                            </form>
+                            <form th:if="${!cardInfo.author.name.equals(userName) && likedThisPost}" id="removeLikeForm" th:action="@{/api/resume_v1/remove-like}">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                <button type="submit" class="btn btn-white text-danger mb-2" id="removeLikeButton">
+                                    <i class="bi bi-heart-fill" id="removeLikeIcon"></i>
+                                </button>
+                            </form>
                             <button type="button" class="btn btn-white text-primary ms-2" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
                                 <i class="bi bi-chat-right-text-fill"></i>
                             </button>
@@ -208,7 +219,8 @@
                 <div id="comments" class="mt-5">
                     <ul class="medias py-md-5 my-md-5 px-sm-0">
                         <li id="comment-12" class="comment byuser comment-author-aymene bypostauthor even thread-even depth-1 has-children bubble bubble-primary list-unstyled">
-                            <div th:if="${ListOfComments!=null}" th:each="comment : ${ListOfComments}" class="wrapper">
+                            <div th:if="${ListOfComments.isEmpty()}">Еще нет ни одного комментария</div>
+                            <div th:if="${!ListOfComments.isEmpty()}" th:each="comment : ${ListOfComments}" class="wrapper">
                                 <div class="avatar">
                                     <a data-toggle="tooltip" data-placement="left" data-html="true" title="" th:href="@{/api/resume_v1/profile/{name}(name=${comment.user.name})}" class="media-object float-left" data-original-title="aymene">
                                         <img alt="" th:src="@{/api/resume_v1/user/image/{name}(name=${comment.user.name})}" class="avatar avatar-40 photo comment_avatar rounded-circle" height="40" width="40">
@@ -298,18 +310,84 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-  <script>
-    document.getElementById('likeButton').addEventListener('click', function() {
-      var likeIcon = document.getElementById('likeIcon');
-      if (likeIcon.classList.contains('bi-heart')) {
-        likeIcon.classList.remove('bi-heart');
-        likeIcon.classList.add('bi-heart-fill');
-      } else {
-        likeIcon.classList.remove('bi-heart-fill');
-        likeIcon.classList.add('bi-heart');
-      }
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('addLikeForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var form = event.target;
+            var formData = new FormData(form);
+            var csrfToken = document.getElementById('csrfToken').value;
+
+            fetch('/api/resume_v1/add-like', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken // Add CSRF token to the headers
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        var likeIcon = document.getElementById('likeIcon');
+                        if (likeIcon.classList.contains('bi-heart')) {
+                            likeIcon.classList.remove('bi-heart');
+                            likeIcon.classList.add('bi-heart-fill');
+                        } else {
+                            likeIcon.classList.remove('bi-heart-fill');
+                            likeIcon.classList.add('bi-heart');
+                        }
+                    } else {
+                        throw new Error('Failed to like the post');
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert('An error occurred while liking the post.');
+                });
+        });
     });
-  </script>
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('removeLikeForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var form = event.target;
+            var formData = new FormData(form);
+            var csrfToken = form.querySelector("input[name='_csrf']").value;
+
+            fetch(form.action, {
+                method: 'DELETE',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken // Add CSRF token to the headers
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        var likeIcon = document.getElementById('removeLikeIcon');
+                        if (likeIcon.classList.contains('bi-heart-fill')) {
+                            likeIcon.classList.remove('bi-heart-fill');
+                            likeIcon.classList.add('bi-heart');
+                        } else {
+                            likeIcon.classList.remove('bi-heart');
+                            likeIcon.classList.add('bi-heart-fill');
+                        }
+                    } else {
+                        throw new Error('Failed to unlike the post');
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert('An error occurred while unliking the post.');
+                });
+        });
+    });
+</script>
 <script src="/js/CreateCommentRequest.js"></script>
 <script src="/js/DeleteCommentRequest.js"></script>
 <script src="/js/patchCommentRequest.js"></script>

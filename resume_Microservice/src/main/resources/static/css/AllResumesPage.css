@@ -8,10 +8,10 @@
 }
 
 .avatar {
-    vertical-align: middle;
-    width: 50px;
-    height: 40px;
+    width: 50px; /* задайте одинаковое значение для width и height */
+    height: 50px;
     border-radius: 50%;
+    object-fit: cover; /* изображение сохраняет свои пропорции и покрывает весь контейнер */
 }
 
 .carousel-item img {
