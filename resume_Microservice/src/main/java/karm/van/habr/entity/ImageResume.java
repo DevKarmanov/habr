@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -13,15 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Transactional
-public class ImageResume {
+public class ImageResume implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob
-    private byte[] image;
+    private String objectName;
 
-    private String imageType;
+    private String bucketName;
 
     @ManyToOne
     @JoinColumn(name = "resume_id")

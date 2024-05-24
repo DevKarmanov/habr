@@ -38,7 +38,6 @@ public class ProfileController {
             model.addAttribute("UserInfo",user);
             model.addAttribute("ListOfSkills",profileService.getUserInfo(name).getSkills().split(","));
             model.addAttribute("MyUserName",authentication.getName());
-            service.getAllImages();
             return "profile";
         }
     }
@@ -60,7 +59,6 @@ public class ProfileController {
             model.addAttribute("UserSettings",profileService.getSettings(name));
             model.addAttribute("PathUserName",name);
             model.addAttribute("cardInfo",service.getResume(cardId));
-            service.getAllImages();
             return "editResumePage";
         }
     }
@@ -80,7 +78,6 @@ public class ProfileController {
             model.addAttribute("MyUserName",authentication.getName());
             model.addAttribute("UserSettings",profileService.getSettings(name));
             model.addAttribute("PathUserName",name);
-            service.getAllImages();
             return "ChangeInformationAboutMe";
         }
     }
@@ -118,7 +115,7 @@ public class ProfileController {
             if (!pathLogin.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права удалять");}
             log.info("Индекс изображения: "+imageId);
             service.deleteResume(imageId,pathLogin,authentication);
-            return ResponseEntity.accepted().body("Успешно создано");
+            return ResponseEntity.accepted().body("Успешно удалено");
         } catch (Exception e) {
             log.info(e.getClass()+" "+e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -133,8 +130,6 @@ public class ProfileController {
                                               @PathVariable(name = "cardId") Long cardId,
                                               @PathVariable(name = "name") String login){
         try {
-            log.info("Заголовок: "+title.get());
-            log.info("Описание: "+description.get());
             log.info("Количество переданных фоток:  "+files.map(fileArray->fileArray.length));
             log.info("Id карточки: "+cardId);
             log.info("Переданный логин: "+login);
@@ -155,7 +150,7 @@ public class ProfileController {
             if (!pathName.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права удалять");}
             log.info("ID карточки: "+cardId);
             service.deleteCard(cardId);
-            return ResponseEntity.accepted().body("Успешно создано");
+            return ResponseEntity.accepted().body("Успешно удалено");
         } catch (Exception e) {
             log.info(e.getClass()+" "+e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

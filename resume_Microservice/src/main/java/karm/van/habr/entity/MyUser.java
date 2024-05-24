@@ -3,6 +3,7 @@ package karm.van.habr.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -13,7 +14,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 
-public class MyUser {
+public class MyUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,10 +45,9 @@ public class MyUser {
     @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
     private List<Resume> resumes;
 
-    @Lob
-    private byte[] profileImage;
+    private String objectName;
 
-    private String imageType;
+    private String busketName;
 
     @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
     private Settings settings;

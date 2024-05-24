@@ -3,6 +3,8 @@ package karm.van.habr.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Getter
 @Setter
@@ -11,7 +13,7 @@ import lombok.*;
 @Builder
 @EqualsAndHashCode
 @ToString
-public class LikedResume {
+public class LikedResume implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

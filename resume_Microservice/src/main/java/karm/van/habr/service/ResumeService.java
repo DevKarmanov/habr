@@ -1,5 +1,6 @@
 package karm.van.habr.service;
 
+import io.minio.errors.*;
 import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
@@ -11,6 +12,8 @@ import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.ResumeRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -19,13 +22,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +43,8 @@ public class ResumeService {
     private final ImageResumeRepo imageResumeRepo;
     private final ImageCompressionService imageCompressionService;
     private final CommentRepo commentRepo;
+    private final MinioServer minioServer;
+    private final static String BUSKET_NAME = "resume-images";
 
     @Transactional
     public Resume getResume(Long id){
@@ -43,7 +52,7 @@ public class ResumeService {
     }
 
     @Transactional(rollbackFor = {ImageTroubleException.class, UsernameNotFoundException.class, IOException.class})
-    public void createResume(Authentication authentication, String title, String description, MultipartFile[] files) throws ImageTroubleException, UsernameNotFoundException, IOException {
+    public void createResume(Authentication authentication, String title, String description, MultipartFile[] files) throws ImageTroubleException, UsernameNotFoundException, IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         Optional<MyUser> opt_user = myUserRepo.findByName(authentication.getName());
 
         if (opt_user.isEmpty()){
@@ -63,16 +72,84 @@ public class ResumeService {
 
         resumeRepo.saveAndFlush(resume);
 
-        imageSave(files,resume);
-
+        imageSave(files, resume, BUSKET_NAME);
     }
+
+    private void imageSave(MultipartFile[] files, Resume resume, String bucketName) throws ImageTroubleException, ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        ExecutorService executorService = Executors.newFixedThreadPool(files.length);
+
+        List<Callable<String>> tasks = getCallableList(files, bucketName, resume.getId());
+
+        minioServer.createBucketIfNotExist(BUSKET_NAME);
+
+        try {
+            List<Future<String>> results = executorService.invokeAll(tasks);
+
+            for (Future<String> result : results) {
+                ImageResume imageResume = ImageResume.builder()
+                        .resume(resume)
+                        .objectName(result.get())
+                        .bucketName(bucketName)
+                        .build();
+                imageResumeRepo.save(imageResume);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ImageTroubleException(e.getMessage());
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+    private List<Callable<String>> getCallableList(MultipartFile[] files, String bucketName,Long resumeId) {
+        List<Callable<String>> tasks = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            tasks.add(() -> {
+                byte[] compressedImage = imageCompressionService.compressImage(file.getBytes(), file.getContentType());
+                if (compressedImage == null) {
+                    throw new RuntimeException("Какая-то проблема с обработкой изображений. Приносим свои извинения. Попробуйте перезагрузить страницу и предоставить новые");
+                }
+                InputStream inputStream = new ByteArrayInputStream(compressedImage);
+                String fileName = generateNameForImage(file,resumeId);
+                minioServer.uploadFile(bucketName, fileName, inputStream, compressedImage.length, file.getContentType());
+                return fileName;
+            });
+        }
+        return tasks;
+    }
+
+    private static String generateNameForImage(MultipartFile file,Long resumeId) {
+        return UUID.randomUUID()+"_"+file.getOriginalFilename() + "_" + resumeId;
+    }
+
+    @Transactional
+    public InputStream getMinioImage(Long resumeId, int imageId) throws Exception {
+        Optional<Resume> resume = resumeRepo.findById(resumeId);
+        if (resume.isEmpty()){
+            throw new RuntimeException("Объявление не найдено");
+        }
+        List<ImageResume> images = imageResumeRepo.findByResume(resume.get());
+        if (imageId < 0 || imageId >= images.size()) {
+            throw new RuntimeException("Индекс вышел за пределы массива");
+        }
+        ImageResume imageResume = images.get(imageId);
+        return minioServer.downloadFile(imageResume.getBucketName(), imageResume.getObjectName());
+    }
+
     @Transactional
     public void deleteResume(long imageId,String pathLogin,Authentication authentication){
         if (!authentication.getName().equals(pathLogin)){
             throw new RuntimeException("Вы не имеете права удалять чужие карточки");
         }
         Optional<ImageResume> image_opt = imageResumeRepo.findById(imageId);
-        image_opt.ifPresentOrElse(imageResumeRepo::delete,
+        image_opt.ifPresentOrElse(image->{
+            imageResumeRepo.delete(image);
+                    try {
+                        minioServer.deleteFile(BUSKET_NAME,image.getObjectName());
+                    } catch (Exception e) {
+                        throw new RuntimeException("Что-то пошло не так при удалении");
+                    }
+                },
                 ()->{throw new RuntimeException("Такая карточка не найдена");});
     }
     @Transactional
@@ -101,8 +178,10 @@ public class ResumeService {
             }
             if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0){
                 try {
-                    imageSave(files.get(),resume);
-                } catch (ImageTroubleException e) {
+                    imageSave(files.get(),resume,BUSKET_NAME);
+                } catch (ImageTroubleException | InsufficientDataException | ServerException | ErrorResponseException |
+                         IOException | NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException |
+                         XmlParserException | InternalException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -113,58 +192,15 @@ public class ResumeService {
     @Transactional
     public void deleteCard(Long cardId){
         Optional<Resume> resume_opt = resumeRepo.findById(cardId);
-        resume_opt.ifPresentOrElse(resumeRepo::delete,()->{throw new RuntimeException("Возникла проблема с удалением, проношу свои извинения");});
-    }
-
-    private void imageSave(MultipartFile[] files,Resume resume) throws ImageTroubleException {
-        ExecutorService executorService = Executors.newFixedThreadPool(files.length);
-
-        List<Callable<byte[]>> tasks = getCallableList(files);
-
-        try {
-            List<Future<byte[]>> results = executorService.invokeAll(tasks);
-
-            for (Future<byte[]> result : results) {
-                byte[] compressedImage = result.get();
-                ImageResume imageResume = ImageResume.builder()
-                        .resume(resume)
-                        .image(compressedImage)
-                        .imageType(files[results.indexOf(result)].getContentType())
-                        .build();
-                imageResumeRepo.save(imageResume);
+        resume_opt.ifPresentOrElse(resume -> {
+            List<ImageResume> images = imageResumeRepo.findByResume(resume);
+            resumeRepo.delete(resume);
+            try {
+                minioServer.deleteFiles(BUSKET_NAME,images.stream().map(ImageResume::getObjectName).toList());
+            } catch (Exception e) {
+                throw new RuntimeException("Произошла ошибка при удалении");
             }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new ImageTroubleException(e.getMessage());
-        } finally {
-            executorService.shutdown();
-        }
-    }
-
-    private List<Callable<byte[]>> getCallableList(MultipartFile[] files) {
-        List<Callable<byte[]>> tasks = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            tasks.add(() -> {
-                byte[] compressedImage = imageCompressionService.compressImage(file.getBytes(), file.getContentType());
-                if (compressedImage == null) {
-                    throw new RuntimeException("Какая-то проблема с обработкой изображений. Приносим свои извинения. Попробуйте перезагрузить страницу и предоставить новые");
-                }
-                return compressedImage;
-            });
-        }
-        return tasks;
-    }
-
-
-    @Transactional
-    public ImageResume getImage(Long resumeId,int imageId){
-        Optional<Resume> resume = resumeRepo.findById(resumeId);
-        if (resume.isEmpty()){
-            return null;
-        }
-        List<ImageResume> images = imageResumeRepo.findByResume(resume.get());
-        return images.get(imageId);
-
+        },()->{throw new RuntimeException("Возникла проблема с удалением, проношу свои извинения");});
     }
 
     public int getPaginationQuantity(){
@@ -175,15 +211,20 @@ public class ResumeService {
     }
 
 
-    //@Cacheable(cacheNames = {"listOfResumes"},key = "{#offset,#limit}")
-    public Page<Resume> getAllResume(int offset, int limit){
-        return resumeRepo.findAll(PageRequest.of(offset,limit));
+
+    //@Cacheable(value = "resumes", key = "#offset +'-'+ #limit +'-'+ #filter")
+    @Transactional
+    public Page<Resume> getAllResume(int offset, int limit,String filter){
+        PageRequest pageRequest = PageRequest.of(offset,limit);
+        if (filter == null){
+            return resumeRepo.findAll(pageRequest);
+        }else {
+            return resumeRepo.findByTitleContaining(filter,pageRequest);
+        }
+
     }
 
-    //TODO: Разобраться как отсутствие этого бесполезного метода ломает мне программу
-    @Transactional
-    public List<ImageResume> getAllImages(){return imageResumeRepo.findAll();}
-
+    @Cacheable(value = "comments", key = "#id")
     @Transactional
     public List<Comment> getCommentsInPost(Long id) {
         Optional<Resume> resume = resumeRepo.findById(id);

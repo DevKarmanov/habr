@@ -7,6 +7,7 @@ import karm.van.habr.repo.CommentRepo;
 import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.ResumeRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class CommentService {
     private final MyUserRepo myUserRepo;
 
 
+    @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
     public void createComment(String text, Long cardId, Authentication authentication){
         Optional<Resume> resume = resumeRepo.findById(cardId);
@@ -40,13 +42,15 @@ public class CommentService {
                 ),()->{throw new RuntimeException("Произошла ошибка, пользователь не найден");});
     }
 
+    @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId,Long cardId) {
         commentRepo.deleteById(commentId);
     }
 
+    @CacheEvict(value = "comments",key = "#cardId")
     @Transactional
-    public void patchComment(Long commentId, String commentText) {
+    public void patchComment(Long commentId, String commentText, Long cardId) {
         Optional<Comment> commentOptional = commentRepo.findById(commentId);
         commentOptional.ifPresentOrElse(comment->{
             if (!commentText.trim().isEmpty()){

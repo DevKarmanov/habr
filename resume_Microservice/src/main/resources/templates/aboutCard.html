@@ -243,6 +243,7 @@
                                             </div>
                                             <form th:id="${'deleteCommentForm'+comment.id}" action="/api/resume_v1/delete-comment">
                                                 <input type="hidden" name="commentId" th:value="${comment.id}">
+                                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
@@ -261,6 +262,7 @@
                                                     <div>
                                                         <input type="hidden" th:value="${comment.id}" name="commentId">
                                                         <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" id="csrfToken${comment.id}">
+                                                        <input type="hidden" name="cardId" th:value="${cardInfo.id}">
                                                         <!-- Comment input -->
                                                         <div class="form-outline mb-4">
                                                             <textarea th:text="${comment.text}" name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>

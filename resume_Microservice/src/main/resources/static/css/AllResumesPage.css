@@ -14,6 +14,11 @@
     object-fit: cover; /* изображение сохраняет свои пропорции и покрывает весь контейнер */
 }
 
+.input-group-append .btn-primary {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .carousel-item img {
     max-width: 100%; /* Максимальная ширина изображения по ширине контейнера */
     max-height: 300px; /* Максимальная высота изображения */

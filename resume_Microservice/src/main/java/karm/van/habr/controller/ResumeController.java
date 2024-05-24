@@ -1,16 +1,13 @@
 package karm.van.habr.controller;
 
+import io.minio.errors.*;
 import karm.van.habr.entity.Comment;
-import karm.van.habr.entity.ImageResume;
-import karm.van.habr.entity.MyUser;
 import karm.van.habr.exceptions.ImageTroubleException;
 import karm.van.habr.service.LikeService;
 import karm.van.habr.service.ResumeService;
 import karm.van.habr.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,10 +19,11 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/resume_v1")
@@ -40,12 +38,13 @@ public class ResumeController {
     public String pageForUser(Model model,
                               Authentication authentication,
                               @RequestParam(defaultValue = "1") int offset,
-                              @RequestParam(defaultValue = "6") int limit) {
-        model.addAttribute("ListOfResume", service.getAllResume(offset-1,limit).getContent());
-        model.addAttribute("PaginationQuantity",service.getPaginationQuantity());
-        model.addAttribute("CurrentPageNumber",offset);
-        model.addAttribute("UserName",authentication.getName());
-        service.getAllImages();
+                              @RequestParam(defaultValue = "6") int limit,
+                              @RequestParam(required = false, name = "filter") String filter) {
+        model.addAttribute("ListOfResume", service.getAllResume(offset - 1, limit, filter).getContent());
+        model.addAttribute("PaginationQuantity", service.getPaginationQuantity());
+        model.addAttribute("CurrentPageNumber", offset);
+        model.addAttribute("UserName", authentication.getName());
+        model.addAttribute("filter", filter);
         return "OtherResume";
     }
 
@@ -64,33 +63,43 @@ public class ResumeController {
         model.addAttribute("ListOfComments",AllComments);
         model.addAttribute("errorMessage",error);
         model.addAttribute("likedThisPost",checkLike);
-        service.getAllImages();
         log.info("Лайкал я этот пост? "+checkLike);
         log.info("Список комментариев:"+AllComments);
         return "aboutCard";
     }
 
     @GetMapping("/images/{resumeId}/{imageId}")
-    public ResponseEntity<byte[]> getResumeImages(@PathVariable Long resumeId,
-                                                  @PathVariable int imageId) {
-        ImageResume imageResume = service.getImage(resumeId,imageId);
-        byte[] imageBytes = imageResume.getImage();
+    public ResponseEntity<byte[]> getResumeImages(@PathVariable Long resumeId, @PathVariable int imageId) {
+        try {
+            InputStream imageStream = service.getMinioImage(resumeId, imageId);
+            if (imageStream == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(imageResume.getImageType()));
+            byte[] imageBytes = imageStream.readAllBytes();
+            imageStream.close();
 
-        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 
+
     @GetMapping("/user/image/{name}")
-    public ResponseEntity<byte[]> getUserImage(@PathVariable String name) {
-        MyUser user = userRegistrationService.getUser(name);
-        byte[] imageBytes = user.getProfileImage();
+    public ResponseEntity<byte[]> getUserImage(@PathVariable String name){
+        try {
+            InputStream profileImage = userRegistrationService.getProfileImage(name);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(user.getImageType()));
+            byte[] imageBytes = profileImage.readAllBytes();
+            profileImage.close();
 
-        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/resumeForm")
@@ -111,7 +120,9 @@ public class ResumeController {
         } catch (UsernameNotFoundException |  ImageTroubleException e) {
             log.info(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (IOException | IllegalArgumentException | HttpServerErrorException e){
+        } catch (IOException | IllegalArgumentException | HttpServerErrorException | ServerException |
+                 InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidKeyException |
+                 InvalidResponseException | XmlParserException | InternalException e){
             log.info(e.getMessage());
             return ResponseEntity.badRequest().body("Произошла внутрення ошибка сервера. Приносим свои извинения. Вы можете попытаться перезагрузить страницу и предоставить новый список изображений");
         }

@@ -5,6 +5,7 @@ import karm.van.habr.entity.Settings;
 import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.SettingsRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

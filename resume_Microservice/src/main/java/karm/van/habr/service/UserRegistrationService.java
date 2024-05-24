@@ -1,7 +1,7 @@
 package karm.van.habr.service;
 
 
-import jakarta.persistence.RollbackException;
+import io.minio.errors.*;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Settings;
 import karm.van.habr.exceptions.ImageTroubleException;
@@ -17,11 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -33,6 +39,8 @@ public class UserRegistrationService {
     private final MyUserRepo myUserRepo;
     private final ImageCompressionService imageCompressionService;
     private final SettingsRepo settingsRepo;
+    private final MinioServer minioServer;
+    private final static String BUSKET_NAME = "profile-images";
 
     @Transactional
     public void saveUser(String userName, String email, String password, MultipartFile file) throws UserAlreadyCreateException, ImageTroubleException {
@@ -53,32 +61,32 @@ public class UserRegistrationService {
                 throw new ImageTroubleException();
             }
 
+            String fileName = UUID.randomUUID()+"_"+file.getOriginalFilename();
+
             MyUser myUser = MyUser.builder()
                     .name(userName)
                     .password(new BCryptPasswordEncoder(5).encode(password))
                     .email(email)
-                    .profileImage(imageBytes)
-                    .imageType(file.getContentType())
+                    .busketName(BUSKET_NAME)
+                    .objectName(fileName)
                     .role("ROLE_USER")
                     .build();
 
             myUserRepo.saveAndFlush(myUser);
+            minioServer.createBucketIfNotExist(BUSKET_NAME);
+            minioServer.uploadFile(BUSKET_NAME,fileName,file.getInputStream(), file.getSize(),file.getContentType());
 
             Settings settings = new Settings();
             settings.setUser(myUser);
             settings.setDontShowHint(false);
             settingsRepo.save(settings);
 
-        } catch (ImageTroubleException | IOException e) {
+        } catch (ImageTroubleException | IOException | ServerException | InsufficientDataException |
+                 ErrorResponseException | NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException |
+                 XmlParserException | InternalException e) {
             log.error("Ошибка при чтении изображения: " + e.getMessage());
             throw new ImageTroubleException("Произошла ошибка с обработкой изображения. Приношу свои извинения. Попробуйте предоставить другое");
         }
-    }
-
-    @Transactional
-    public MyUser getUser(String name) {
-        return myUserRepo.findByName(name)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь с именем " + name + " не найден"));
     }
 
 
@@ -108,7 +116,7 @@ public class UserRegistrationService {
                                  Optional<String> country,Optional<String> jobTitle,Optional<String> skillsInput,String name,
                                  Optional<String> newLogin, Optional<String> email, Optional<MultipartFile> file){
         Pattern EMAIL_PATTERN = Pattern.compile(
-                "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@"
                         + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
         );
 
@@ -129,12 +137,15 @@ public class UserRegistrationService {
 
             Callable<Void> task2 = () -> {
                 if (file.isPresent() && file.get().getSize() > 0) {
+                    String fileName = UUID.randomUUID()+"_"+file.get().getOriginalFilename();
                     try {
                         byte[] imageBytes = imageCompressionService.compressImage(file.get().getBytes(), file.get().getContentType());
                         if (imageBytes == null) {
                             throw new ImageTroubleException();
                         }
-                        user.setProfileImage(imageBytes);
+                        minioServer.deleteFile(BUSKET_NAME,user.getObjectName());
+                        user.setObjectName(fileName);
+                        minioServer.uploadFile(BUSKET_NAME,fileName,file.get().getInputStream(),file.get().getSize(),file.get().getContentType());
                     } catch (Exception e) {
                         throw new RuntimeException();
                     }
@@ -165,5 +176,15 @@ public class UserRegistrationService {
             }
 
         },()->{throw new UsernameNotFoundException("Такой пользователь не найден");});
+    }
+
+    public InputStream getProfileImage(String name) throws Exception {
+        Optional<MyUser> user = myUserRepo.findByName(name);
+
+        if (user.isPresent()){
+            return minioServer.downloadFile(user.get().getBusketName(),user.get().getObjectName());
+        }else {
+            throw new RuntimeException("Такой пользователь не найден");
+        }
     }
 }
