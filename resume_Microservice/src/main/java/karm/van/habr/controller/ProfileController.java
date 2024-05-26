@@ -30,6 +30,7 @@ public class ProfileController {
                               Model model,
                               Authentication authentication){
         MyUser user = profileService.getUserInfo(name);
+        log.info(user.toString());
         if (user.getFirstname()==null){
             return "redirect:/api/resume_v1/OtherInformation";
         }else {

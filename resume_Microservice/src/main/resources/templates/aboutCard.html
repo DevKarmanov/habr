@@ -6,36 +6,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <title>Ознакомьтесь с данным объявлением</title>
   <style>
-    .comment-self {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-    
-    .comment-self.left {
-      justify-content: flex-start;
-    }
-    
-    .comment-self.right {
-      justify-content: flex-end;
-    }
-    
     .bubble .wrapper {
       display: flex;
       flex-direction: row;
       margin: 40px 14px;
     }
-    
-    .medias {
-      width: 80%;
-      margin: auto;
-    }
-    
-    .children {
-      padding: 0px;
-    }
-    
+
     .children .bubble-secondary .wrapper {
       flex-direction: row-reverse;
     }
@@ -43,18 +21,6 @@
     .children .bubble-secondary .wrapper .messenger-bulle {
       background: #f1f0f0;
       color: black;
-    }
-    
-    .messenger-bulle {
-      background: #1976d2;
-      border-radius: 10px;
-      padding: 6px 12px;
-      color: white;
-      font-size: .8em;
-      display: inline-block;
-      margin: 0px 5px;
-      max-width: 60%;
-      position: relative;
     }
     
     .messenger-bulle .meta {
@@ -83,32 +49,24 @@
         object-fit: cover; /* изображение сохраняет свои пропорции и покрывает весь контейнер */
     }
 
-    .comments-wrapper {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 20px 0;
+    .dot {
+        height: 7px;
+        width: 7px;
+        margin-top: 3px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
     }
 
-    .comment {
-        background-color: #ffffff;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 10px;
+
+    .comment-text-sm {
+        word-wrap: break-word; /* Это свойство заставляет текст переноситься на новую строку, если он слишком длинный */
+        overflow-wrap: break-word; /* Альтернативное свойство для старых версий браузеров */
+        word-break: break-word; /* Альтернативное свойство для старых версий браузеров */
     }
 
-    .comment .avatar {
-        margin-right: 10px;
-    }
-
-    .comment .comment-self {
-        background-color: #e9ecef;
-        border-radius: 10px;
-        padding: 10px;
-    }
-
-    .comment .children {
-        margin-left: 40px;
+    .highlighted-comment {
+        box-shadow: 0 0 10px 5px rgba(255, 255, 153, 0.7); /* Создаем размытую границу */
     }
 
   </style>
@@ -157,10 +115,14 @@
                         <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
                         <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${userName})}">Профиль</a></li>
+                        <li>
+                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
+        <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-size: cover; background-position: center; background-repeat: repeat;">
             <div class="container mt-5">
                 <div class="row">
@@ -188,99 +150,112 @@
 
                     <!-- Article Section -->
                     <div class="col-md-6">
-                        <h2 th:text="${cardInfo.title}">Article Title</h2>
-                        <p th:text="${cardInfo.description}">
+                        <h2 th:text="${cardInfo.title}" style="word-wrap: break-word;">Article Title</h2>
+                        <p th:text="${cardInfo.description}" style="word-wrap: break-word;">
                             GeeksForGeeks is a Computer Science portal for geeks. It contains well written, well thought articles. This platform has been designed for every geek wishing to expand their knowledge, share their knowledge and is ready to grab their dream job. We have millions of articles, live as well as online courses, thousands of tutorials and much more just for the geek inside you.
                         </p>
-                        <div class="d-flex justify-content-start align-items-center">
-                            <form th:if="${!cardInfo.author.name.equals(userName) && !likedThisPost}" id="addLikeForm">
+                        <div class="d-flex justify-content-start align-items-center gap-2">
+                            <a th:if="${!userName.equals(cardInfo.author.name)}" th:href="@{/api/resume_v1/profile/{name}(name=${cardInfo.author.name})}" class="d-flex align-items-center text-decoration-none">
+                                <img th:src="@{/api/resume_v1/user/image/{name}(name=${cardInfo.author.name})}"
+                                     class="rounded-circle"
+                                     style="width: 40px; height: 40px; object-fit: cover;"
+                                     alt="Avatar" />
+                            </a>
+                            <form th:if="${!cardInfo.author.name.equals(userName) && !likedThisPost}" id="addLikeForm" class="mb-0 d-flex align-items-center">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken">
                                 <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                <button type="submit" class="btn btn-white text-danger mb-2" id="likeButton">
+                                <button type="submit" class="btn btn-white text-danger mb-0" id="likeButton">
                                     <i class="bi bi-heart" id="likeIcon"></i>
                                 </button>
                             </form>
-                            <form th:if="${!cardInfo.author.name.equals(userName) && likedThisPost}" id="removeLikeForm" th:action="@{/api/resume_v1/remove-like}">
+                            <form th:if="${!cardInfo.author.name.equals(userName) && likedThisPost}" id="removeLikeForm" th:action="@{/api/resume_v1/remove-like}" class="mb-0 d-flex align-items-center">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                 <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                <button type="submit" class="btn btn-white text-danger mb-2" id="removeLikeButton">
+                                <button type="submit" class="btn btn-white text-danger mb-0" id="removeLikeButton">
                                     <i class="bi bi-heart-fill" id="removeLikeIcon"></i>
                                 </button>
                             </form>
-                            <button type="button" class="btn btn-white text-primary ms-2" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
+                            <button type="button" class="btn btn-white text-primary ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
                                 <i class="bi bi-chat-right-text-fill"></i>
+                            </button>
+                        </div>
+                        <p th:if="${!userName.equals(cardInfo.author.name)}" class="text-muted mb-0" th:text="${cardInfo.author.roleInCommand}">Web designer</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex flex-column col-md-12">
+                <div class="coment-bottom bg-white p-2 px-4">
+                    <div th:if="${ListOfComments.isEmpty()}">Еще нет ни одного комментария</div>
+                    <div th:if="${!ListOfComments.isEmpty()}" th:each="comment : ${ListOfComments}" th:id="${comment.id}" class="commented-section mt-2">
+                        <div class="d-flex flex-row align-items-center commented-user">
+                            <h5 class="mr-2" th:text="${comment.user.name}">Corey oates</h5>
+                            <span class="dot mb-1"></span>
+                            <span class="mb-1 ml-2 me-2" th:text="${comment.createTime}">4 hours ago</span>
+                            <span th:if="${comment.parentComment !=null && comment.id != comment.parentComment.id}" class="mb-1 ml-2 text-muted">В ответ пользователю
+                                <a th:href="${'#'+comment.parentComment.id}" th:text="${comment.parentComment.user.name}" class="comment-link text-decoration-none"></a>
+                            </span>
+                            <div class="ms-auto"> <!-- Этот блок обеспечит размещение кнопок справа -->
+                                <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#successModal'+comment.id}">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                                <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#editModal'+comment.id}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Модальное окно переспрашивания перед удалением -->
+                        <div class="modal fade" th:id="${'successModal'+comment.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Вы действительно хотите удалить этот комментарий?</h5>
+                                    </div>
+                                    <form th:id="${'deleteCommentForm'+comment.id}" action="/api/resume_v1/delete-comment">
+                                        <input type="hidden" name="commentId" th:value="${comment.id}">
+                                        <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                                            <button type="submit" class="btn btn-danger deleteCommentButton">Да</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Модальное окно редактирования комментария -->
+                        <div class="modal fade" th:id="${'editModal'+comment.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered text-center d-flex justify-content-center">
+                                <div class="modal-content w-75">
+                                    <div class="modal-body p-4 position-relative">
+                                        <form th:id="${'editCommentForm'+comment.id}" id="editCommentForm${comment.id}">
+                                            <div>
+                                                <input type="hidden" th:value="${comment.id}" name="commentId">
+                                                <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" id="csrfToken${comment.id}">
+                                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                                <!-- Comment input -->
+                                                <div class="form-outline mb-4">
+                                                    <textarea th:text="${comment.text}" name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
+                                                </div>
+                                                <!-- Submit button -->
+                                                <button type="submit" class="btn btn-primary editCommentButton">Изменить</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-text-sm"><span th:text="${comment.text}"></span>
+                            <button th:id="${'comment-id-'+comment.id}" class="btn btn-white me-2 btn-reply" data-bs-toggle="modal" data-bs-target="#PostCommentModal" th:data-comment-id="${comment.id}">
+                                <i class="bi bi-reply-fill"></i>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="comments-wrapper">
-                <div id="comments" class="mt-5">
-                    <ul class="medias py-md-5 my-md-5 px-sm-0">
-                        <li id="comment-12" class="comment byuser comment-author-aymene bypostauthor even thread-even depth-1 has-children bubble bubble-primary list-unstyled">
-                            <div th:if="${ListOfComments.isEmpty()}">Еще нет ни одного комментария</div>
-                            <div th:if="${!ListOfComments.isEmpty()}" th:each="comment : ${ListOfComments}" class="wrapper">
-                                <div class="avatar">
-                                    <a data-toggle="tooltip" data-placement="left" data-html="true" title="" th:href="@{/api/resume_v1/profile/{name}(name=${comment.user.name})}" class="media-object float-left" data-original-title="aymene">
-                                        <img alt="" th:src="@{/api/resume_v1/user/image/{name}(name=${comment.user.name})}" class="avatar avatar-40 photo comment_avatar rounded-circle" height="40" width="40">
-                                    </a>
-                                </div>
-                                <div id="div-comment-12" class="comment-self left">
-                                    <p th:text="${comment.text}" class="messenger-bulle hoverable">
-                                        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                                        <span th:text="${comment.createTime}" class="meta">2 April 2017, 14 h 06 min</span>
-                                    </p>
-                                    <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white" data-bs-toggle="modal" th:data-bs-target="${'#successModal'+comment.id}"><i class="bi bi-trash-fill"></i></button>
-                                    <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white" data-bs-toggle="modal" th:data-bs-target="${'#editModal'+comment.id}"><i class="bi bi-pencil-square"></i></button>
-                                </div>
-                                <!-- Модальное окно переспрашивания перед удалением -->
-                                <div class="modal fade" th:id="${'successModal'+comment.id}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel">Вы действительно хотите удалить этот комментарий?</h5>
-                                            </div>
-                                            <form th:id="${'deleteCommentForm'+comment.id}" action="/api/resume_v1/delete-comment">
-                                                <input type="hidden" name="commentId" th:value="${comment.id}">
-                                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
-                                                    <button type="submit" class="btn btn-danger deleteCommentButton">Да</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Модальное окно редактирования комментария -->
-                                <div class="modal fade" th:id="${'editModal'+comment.id}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered text-center d-flex justify-content-center">
-                                        <div class="modal-content w-75">
-                                            <div class="modal-body p-4 position-relative">
-                                                <form th:id="${'editCommentForm'+comment.id}" id="editCommentForm${comment.id}">
-                                                    <div>
-                                                        <input type="hidden" th:value="${comment.id}" name="commentId">
-                                                        <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" id="csrfToken${comment.id}">
-                                                        <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                                        <!-- Comment input -->
-                                                        <div class="form-outline mb-4">
-                                                            <textarea th:text="${comment.text}" name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
-                                                        </div>
-                                                        <!-- Submit button -->
-                                                        <button type="submit" class="btn btn-primary editCommentButton">Изменить</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <!-- #comments -->
-            </div>
         </div>
     </div>
 </div>
@@ -296,6 +271,7 @@
                         <input th:if="${errorMessage}" th:value="${errorMessage}" type="hidden">
                         <h5 th:text="${userName}" class="pt-5 my-3">Maria Doe</h5>
                         <input type="hidden" th:value="${cardInfo.id}" name="cardId">
+                        <input type="hidden" id="replyToCommentId" name="replyToCommentId">
                         <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}">
                         <!-- Comment input -->
                         <div class="form-outline mb-4">
@@ -390,9 +366,59 @@
         });
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Находим кнопку, которая открывает модальное окно и имеет класс create-comment
+        var modalButton = document.querySelector('.create-comment');
+        // Находим поле replyToCommentId
+        var replyToCommentIdInput = document.getElementById('replyToCommentId');
+
+        // Добавляем обработчик события при клике на кнопку, которая открывает модальное окно
+        modalButton.addEventListener('click', function() {
+            // Очищаем значение поля replyToCommentId
+            replyToCommentIdInput.value = '';
+        });
+    });
+
+    // JavaScript для заполнения скрытого поля при ответе на комментарий
+    document.querySelectorAll('.btn-reply').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            document.getElementById('replyToCommentId').value = commentId;
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик события для всех ссылок, к которым вы хотите добавить подсветку комментария
+        document.querySelectorAll('a.comment-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Предотвращаем стандартное поведение перехода по ссылке
+
+                // Удаляем подсветку со всех комментариев
+                document.querySelectorAll('.highlighted-comment').forEach(comment => {
+                    comment.classList.remove('highlighted-comment');
+                });
+
+                // Получаем идентификатор комментария из атрибута href ссылки
+                const commentId = this.getAttribute('href').substring(1); // Убираем решетку (#) из начала строки
+
+                // Находим комментарий с соответствующим идентификатором и добавляем ему класс для подсветки
+                const comment = document.getElementById(commentId);
+                if (comment) {
+                    comment.classList.add('highlighted-comment');
+                }
+
+                // Переходим по ссылке
+                window.location.href = this.href;
+            });
+        });
+    });
+</script>
 <script src="/js/CreateCommentRequest.js"></script>
 <script src="/js/DeleteCommentRequest.js"></script>
 <script src="/js/patchCommentRequest.js"></script>
+<script src="/js/logoutRequest.js"></script>
 </body>
 
 </html>

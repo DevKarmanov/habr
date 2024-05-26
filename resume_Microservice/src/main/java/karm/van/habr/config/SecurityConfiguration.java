@@ -53,8 +53,13 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/resume_v1/admin").hasRole("ADMIN")
                         .requestMatchers("/api/resume_v1/user").hasAnyRole("ADMIN","USER")
                         .requestMatchers("/api/resume_v1/**").authenticated())
-                .formLogin(form->form.loginPage("/api/resume_v1/login").permitAll()
+                .formLogin(form->form
+                        .loginPage("/api/resume_v1/login").permitAll()
                         .successHandler(authenticationSuccessHandler()))
+                .logout(out-> out
+                        .logoutUrl("/api/resume_v1/logout")
+                        .permitAll()
+                        .logoutSuccessUrl("/api/resume_v1/login"))
                 .build();
     }
 

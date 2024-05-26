@@ -51,10 +51,14 @@
                         <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
                         <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${MyUserName})}">Профиль</a></li>
+                        <li>
+                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
+        <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
             <div class="container">
                 <div class="row">
@@ -144,8 +148,8 @@
                                                 </div>
                                                 <div class="card-body">
                                                     <div>
-                                                        <h5 th:text="${resume.title}" class="mb-1 font-size-17">Marketing</h5>
-                                                        <p th:text="${resume.description}" class="text-muted  font-size-13 mb-0">4 Projects</p>
+                                                        <h5 th:text="${resume.title}" class="mb-1 font-size-17" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Marketing</h5>
+                                                        <p th:text="${resume.description}" class="text-muted  font-size-13 mb-0" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">4 Projects</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -245,4 +249,5 @@
 <script src="/js/redirectToEditCardForm.js"></script>
 <script src="/js/deleteCardRequest.js"></script>
 <script src="/js/deleteLikeRequest.js"></script>
+<script src="/js/logoutRequest.js"></script>
 </html>

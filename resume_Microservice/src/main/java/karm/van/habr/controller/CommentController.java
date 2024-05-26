@@ -20,10 +20,11 @@ public class CommentController {
     @PostMapping("/create-comment")
     public CompletableFuture<ResponseEntity<String>> createComment(@RequestParam(name = "text") String text,
                                                                    @RequestParam(name = "cardId") Long id,
+                                                                   @RequestParam(name = "replyToCommentId",required = false) Long replyToCommentId,
                                                                    Authentication authentication){
         return CompletableFuture.supplyAsync(()->{
             try {
-                commentService.createComment(text,id,authentication);
+                commentService.createComment(text,id,authentication,replyToCommentId);
                 return ResponseEntity.ok("Успех");
             }catch (Exception e){
                 return ResponseEntity.badRequest().body(e.getMessage());

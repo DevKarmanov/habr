@@ -52,10 +52,14 @@
                         <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
                         <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${UserName})}">Профиль</a></li>
+                        <li>
+                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
+        <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
             <header class="justify-content-center align-items-center mb-4">
                 <form id="findResumeByFilterForm" action="/api/resume_v1/user" method="get" class="input-group" style="width: 100%;">
@@ -93,8 +97,9 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <h5 th:text="${resume.title}" class="card-title">Card title</h5>
-                                    <p th:text="${resume.description}" class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                    <h5 th:text="${resume.title}" class="card-title" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Card title</h5>
+                                    <!-- Обрезать описание до определенного количества символов -->
+                                    <p th:text="${resume.description}" class="card-text" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Thymeleaf is a modern server-side Java template engine for both web and standalone environments.</p>
                                 </div>
 
                                 <div class="card-footer d-flex justify-content-between align-items-center">
@@ -119,5 +124,6 @@
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="/js/logoutRequest.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ package karm.van.habr.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -13,8 +14,8 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-
 public class MyUser implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

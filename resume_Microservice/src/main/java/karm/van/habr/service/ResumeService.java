@@ -94,7 +94,8 @@ public class ResumeService {
                 imageResumeRepo.save(imageResume);
             }
         } catch (InterruptedException | ExecutionException e) {
-            throw new ImageTroubleException(e.getMessage());
+            log.error(e.getMessage());
+            throw new ImageTroubleException("Какая-то проблема с обработкой изображений. Приносим свои извинения. Попробуйте перезагрузить страницу и предоставить новые");
         } finally {
             executorService.shutdown();
         }
@@ -107,7 +108,7 @@ public class ResumeService {
             tasks.add(() -> {
                 byte[] compressedImage = imageCompressionService.compressImage(file.getBytes(), file.getContentType());
                 if (compressedImage == null) {
-                    throw new RuntimeException("Какая-то проблема с обработкой изображений. Приносим свои извинения. Попробуйте перезагрузить страницу и предоставить новые");
+                    throw new RuntimeException();
                 }
                 InputStream inputStream = new ByteArrayInputStream(compressedImage);
                 String fileName = generateNameForImage(file,resumeId);
@@ -224,7 +225,7 @@ public class ResumeService {
 
     }
 
-    @Cacheable(value = "comments", key = "#id")
+    //TODO: кэширование комментариев @Cacheable(value = "comments", key = "#id")
     @Transactional
     public List<Comment> getCommentsInPost(Long id) {
         Optional<Resume> resume = resumeRepo.findById(id);

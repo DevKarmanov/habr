@@ -1,15 +1,19 @@
 package karm.van.habr.service;
 
 import karm.van.habr.entity.MyUser;
+import karm.van.habr.entity.Resume;
 import karm.van.habr.entity.Settings;
 import karm.van.habr.repo.MyUserRepo;
+import karm.van.habr.repo.ResumeRepo;
 import karm.van.habr.repo.SettingsRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,10 +21,12 @@ import java.util.Optional;
 public class ProfileService {
     private final MyUserRepo myUserRepo;
     private final SettingsRepo settingsRepo;
+    private final ResumeRepo resumeRepo;
 
     @Transactional
+    //@Cacheable(value = "userProfile", key = "#name")
     public MyUser getUserInfo(String name){
-        return myUserRepo.findByName(name).orElseThrow(()->new UsernameNotFoundException("Пользователь не найден"));
+        return myUserRepo.findByName(name).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
     public Settings getSettings(String name){

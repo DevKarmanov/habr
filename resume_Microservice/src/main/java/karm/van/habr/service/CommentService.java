@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -23,32 +24,51 @@ public class CommentService {
     private final MyUserRepo myUserRepo;
 
 
-    @CacheEvict(value = "comments", key = "#cardId")
+    //TODO: кэширование комментариев @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
-    public void createComment(String text, Long cardId, Authentication authentication){
+    public void createComment(String text, Long cardId, Authentication authentication, Long replyToCommentId) {
         Optional<Resume> resume = resumeRepo.findById(cardId);
-
         Optional<MyUser> user = myUserRepo.findByName(authentication.getName());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-        user.ifPresentOrElse(myUser ->
-                resume.ifPresentOrElse(s -> {
-                    Comment comment = new Comment();
-                    comment.setUser(myUser);
-                    comment.setResume(s);
-                    comment.setText(text);
-                    comment.setCreateTime(LocalDateTime.now());
-                    commentRepo.save(comment);
-                },()->{throw new RuntimeException("Произошла ошибка при публикации комментария");}
-                ),()->{throw new RuntimeException("Произошла ошибка, пользователь не найден");});
+        if (user.isEmpty() || resume.isEmpty()) {
+            throw new RuntimeException("Произошла ошибка: пользователь или резюме не найдены");
+        }
+
+        Comment parentComment = null;
+        if (replyToCommentId != null) {
+            Optional<Comment> parentOptional = commentRepo.findById(replyToCommentId);
+            if (parentOptional.isEmpty()) {
+                throw new RuntimeException("Комментарий с id " + replyToCommentId + " не найден");
+            }
+            parentComment = parentOptional.get();
+        }
+
+        Comment comment = new Comment();
+        comment.setText(text);
+        comment.setResume(resume.get());
+        comment.setUser(user.get());
+        comment.setCreateTime(LocalDateTime.now().format(formatter));
+
+        if (parentComment != null) {
+            // Если есть родительский комментарий, устанавливаем его как родительский для текущего комментария
+            comment.setParentComment(parentComment);
+        } else {
+            // Если нет родительского комментария, делаем текущий комментарий родительским самому себе
+            comment.setParentComment(comment);
+        }
+
+        commentRepo.save(comment);
     }
 
-    @CacheEvict(value = "comments", key = "#cardId")
+
+    //TODO: кэширование комментариев @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
     public void deleteComment(Long commentId,Long cardId) {
         commentRepo.deleteById(commentId);
     }
 
-    @CacheEvict(value = "comments",key = "#cardId")
+    //TODO: кэширование комментариев @CacheEvict(value = "comments",key = "#cardId")
     @Transactional
     public void patchComment(Long commentId, String commentText, Long cardId) {
         Optional<Comment> commentOptional = commentRepo.findById(commentId);

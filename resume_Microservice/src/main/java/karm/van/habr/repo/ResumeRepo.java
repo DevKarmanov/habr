@@ -17,4 +17,6 @@ public interface ResumeRepo extends JpaRepository<Resume,Long> {
     @Query("SELECT r from Resume " +
             "r WHERE LOWER(r.title) like LOWER(CONCAT('%', :filter, '%'))")
     Page<Resume> findByTitleContaining(String filter, Pageable pageable);
+
+    Optional<List<Resume>> findByAuthor(MyUser user);
 }
