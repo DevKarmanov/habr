@@ -59,6 +59,18 @@ public class MyUser implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<LikedResume> likedResumes;
 
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_subscriptions",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "subscribed_to_user_id")
+    )
+    private List<MyUser> subscriptions;
+
+    @ManyToMany(mappedBy = "subscriptions")
+    private List<MyUser> subscribers;
+
     @Override
     public String toString() {
         return "MyUser{" +

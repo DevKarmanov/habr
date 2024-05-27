@@ -178,6 +178,21 @@
                             <button type="button" class="btn btn-white text-primary ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
                                 <i class="bi bi-chat-right-text-fill"></i>
                             </button>
+                            <form th:if="${!cardInfo.author.name.equals(userName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post">
+                                <button type="submit" class="btn btn-primary ms-2 mb-0 d-flex align-items-center subscribe-button">
+                                    <i class="bi bi-plus"></i>Подписаться на пользователя
+                                </button>
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="subscribeOn" th:value="${cardInfo.author.id}">
+                            </form>
+
+                            <form th:if="${!cardInfo.author.name.equals(userName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe">
+                                <button type="submit" class="btn btn-danger ms-2 mb-0 d-flex align-items-center unsubscribe-button">
+                                    <i class="bi bi-x-lg"></i>Отписаться от пользователя
+                                </button>
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="unsubscribeOn" th:value="${cardInfo.author.id}">
+                            </form>
                         </div>
                         <p th:if="${!userName.equals(cardInfo.author.name)}" class="text-muted mb-0" th:text="${cardInfo.author.roleInCommand}">Web designer</p>
                     </div>
@@ -289,6 +304,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
+<script src="/js/SubscribeRequest.js"></script>
+<script src="/js/UnSubscribeForm.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('addLikeForm').addEventListener('submit', function(event) {

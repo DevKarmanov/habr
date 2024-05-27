@@ -1,6 +1,7 @@
 package karm.van.habr.controller;
 
 import karm.van.habr.entity.MyUser;
+import karm.van.habr.service.MyUserService;
 import karm.van.habr.service.ProfileService;
 import karm.van.habr.service.ResumeService;
 import karm.van.habr.service.UserRegistrationService;
@@ -23,6 +24,7 @@ public class ProfileController {
     private final ResumeService service;
     private final ProfileService profileService;
     private final UserRegistrationService userRegistrationService;
+    private final MyUserService myUserService;
 
     @GetMapping("/{name}")
     public String profilePage(@PathVariable String name,
@@ -30,10 +32,12 @@ public class ProfileController {
                               Model model,
                               Authentication authentication){
         MyUser user = profileService.getUserInfo(name);
+        boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),name);
         log.info(user.toString());
         if (user.getFirstname()==null){
             return "redirect:/api/resume_v1/OtherInformation";
         }else {
+            model.addAttribute("subscribeOnThisAuthor",checkSub);
             model.addAttribute("errorMessage",error);
             model.addAttribute("UserName",name);
             model.addAttribute("UserInfo",user);

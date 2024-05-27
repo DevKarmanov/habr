@@ -2,8 +2,10 @@ package karm.van.habr.controller;
 
 import io.minio.errors.*;
 import karm.van.habr.entity.Comment;
+import karm.van.habr.entity.Resume;
 import karm.van.habr.exceptions.ImageTroubleException;
 import karm.van.habr.service.LikeService;
+import karm.van.habr.service.MyUserService;
 import karm.van.habr.service.ResumeService;
 import karm.van.habr.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class ResumeController {
     private final ResumeService service;
     private final UserRegistrationService userRegistrationService;
     private final LikeService likeService;
+    private final MyUserService myUserService;
 
     @GetMapping("/user")
     public String pageForUser(Model model,
@@ -54,11 +57,16 @@ public class ResumeController {
                                 Authentication authentication,
                                 @RequestParam(name = "error",required = false) String error){
         List<Comment> AllComments = service.getCommentsInPost(id);
-        boolean checkLike = likeService.likeThisPost(id,authentication.getName());
-
         AllComments.sort(Comparator.comparing(Comment::getCreateTime));
 
-        model.addAttribute("cardInfo",service.getResume(id));
+        Resume resume = service.getResume(id);
+
+        boolean checkLike = likeService.likeThisPost(id,authentication.getName());
+        boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),resume.getAuthor());
+
+
+        model.addAttribute("subscribeOnThisAuthor",checkSub);
+        model.addAttribute("cardInfo",resume);
         model.addAttribute("userName",authentication.getName());
         model.addAttribute("ListOfComments",AllComments);
         model.addAttribute("errorMessage",error);
