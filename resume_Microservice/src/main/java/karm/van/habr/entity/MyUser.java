@@ -59,6 +59,9 @@ public class MyUser implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<LikedResume> likedResumes;
 
+    @ManyToMany(mappedBy = "watchers")
+    private List<Resume> checkedResumes;
+
 
     @ManyToMany
     @JoinTable(

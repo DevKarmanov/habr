@@ -61,6 +61,10 @@ public class ResumeController {
 
         Resume resume = service.getResume(id);
 
+        if (!authentication.getName().equals(resume.getAuthor().getName())){
+            service.incrementViews(resume,authentication);
+        }
+
         boolean checkLike = likeService.likeThisPost(id,authentication.getName());
         boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),resume.getAuthor());
 

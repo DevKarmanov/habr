@@ -44,6 +44,7 @@ public class ResumeService {
     private final ImageCompressionService imageCompressionService;
     private final CommentRepo commentRepo;
     private final MinioServer minioServer;
+    private final NotificationProducer notificationProducer;
     private final static String BUSKET_NAME = "resume-images";
 
     @Transactional
@@ -67,12 +68,14 @@ public class ResumeService {
                 .title(title.trim())
                 .description(description.trim())
                 .author(user)
+                .resume_views(0)
                 .createdAt(LocalDate.now())
                 .build();
 
         resumeRepo.saveAndFlush(resume);
 
         imageSave(files, resume, BUSKET_NAME);
+        notificationProducer.sendNotifications(user.getId());
     }
 
     private void imageSave(MultipartFile[] files, Resume resume, String bucketName) throws ImageTroubleException, ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
@@ -233,4 +236,17 @@ public class ResumeService {
         return resume.map(commentRepo::getCommentByResume).orElse(null);
     }
 
+    @Transactional
+    public void incrementViews(Resume resume,Authentication authentication) {
+        Optional<MyUser> user_opt = myUserRepo.findByName(authentication.getName());
+        user_opt.ifPresentOrElse(user->{
+                    List<MyUser> watchers = resume.getWatchers();
+                    boolean check = watchers.stream().anyMatch(w->w.equals(user));
+                    if (!check){
+                        resume.setResume_views(resume.getResume_views()+1);
+                        watchers.add(user);
+                        resume.setWatchers(watchers);
+                    }
+                }, ()->{throw new RuntimeException("Такой пользователь не найден");});
+    }
 }

@@ -30,6 +30,11 @@ public class Resume implements Serializable {
 
     private LocalDate createdAt;
 
+    private int resume_views;
+
+    @ManyToMany
+    private List<MyUser> watchers;
+
     @OneToMany(mappedBy = "resume",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<ImageResume> images;
 

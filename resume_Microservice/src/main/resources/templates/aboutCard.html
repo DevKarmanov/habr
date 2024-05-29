@@ -175,6 +175,8 @@
                                     <i class="bi bi-heart-fill" id="removeLikeIcon"></i>
                                 </button>
                             </form>
+                            <div th:if="${!cardInfo.author.name.equals(userName)}" id="likeQuantity" th:text="${cardInfo.likedResumes.size()}"></div>
+                            <div th:if="${cardInfo.author.name.equals(userName)}" th:text="${'Количество лайков: '+cardInfo.likedResumes.size()}"></div>
                             <button type="button" class="btn btn-white text-primary ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
                                 <i class="bi bi-chat-right-text-fill"></i>
                             </button>
@@ -333,6 +335,10 @@
                             likeIcon.classList.remove('bi-heart-fill');
                             likeIcon.classList.add('bi-heart');
                         }
+
+                        // Обновление значения likeQuantity
+                        var likeQuantity = document.getElementById('likeQuantity');
+                        likeQuantity.textContent = parseInt(likeQuantity.textContent) + 1;
                     } else {
                         throw new Error('Failed to like the post');
                     }
@@ -372,6 +378,10 @@
                             likeIcon.classList.remove('bi-heart');
                             likeIcon.classList.add('bi-heart-fill');
                         }
+
+                        // Обновление значения likeQuantity
+                        var likeQuantity = document.getElementById('likeQuantity');
+                        likeQuantity.textContent = parseInt(likeQuantity.textContent) - 1;
                     } else {
                         throw new Error('Failed to unlike the post');
                     }
