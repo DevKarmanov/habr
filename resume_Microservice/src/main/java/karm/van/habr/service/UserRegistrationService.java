@@ -2,6 +2,7 @@ package karm.van.habr.service;
 
 
 import io.minio.errors.*;
+import karm.van.habr.dto.SecretKeyDTO;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Settings;
 import karm.van.habr.exceptions.ImageTroubleException;
@@ -20,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +44,7 @@ public class UserRegistrationService {
     private final ImageCompressionService imageCompressionService;
     private final SettingsRepo settingsRepo;
     private final MinioServer minioServer;
+    private final NotificationProducer notificationProducer;
     private final static String BUSKET_NAME = "profile-images";
 
     @Transactional
@@ -47,6 +52,8 @@ public class UserRegistrationService {
         log.info("Вызван метод saveUser");
         if (myUserRepo.existsByName(userName)) {
             throw new UserAlreadyCreateException("Пользователь с таким именем уже существует. Придумайте другой");
+        }else if(myUserRepo.existsByEmail(email)){
+            throw new UserAlreadyCreateException("Пользователь с таким email уже существует. Авторизуйтесь");
         }
 
         saveImageAndUser(userName, email, password, file);
@@ -186,5 +193,31 @@ public class UserRegistrationService {
         }else {
             throw new RuntimeException("Такой пользователь не найден");
         }
+    }
+
+
+    public SecretKeyDTO sendSecretKey(String email) {
+        if (!myUserRepo.existsByEmail(email)){
+            throw new RuntimeException("Такой email в системе не зарегистрирован");
+        }
+        return notificationProducer.sendSecretKey(email);
+    }
+
+    public boolean checkCode(SecretKeyDTO secretKeyDTO, String secretKey, String secretKeyTimeString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        LocalDateTime timeNow = LocalDateTime.now();
+        LocalDateTime secretKeyTime = LocalDateTime.parse(secretKeyTimeString,formatter);
+        Duration duration = Duration.between(secretKeyTime,timeNow);
+        return duration.toMinutes()<=5 && secretKey.equals(String.valueOf(secretKeyDTO.secretKey()));
+    }
+
+    @Transactional
+    public void saveNewPassword(String password, String repeatPassword, String email) {
+        if (!password.equals(repeatPassword)){throw new RuntimeException("Пароли не совпадают");}
+        Optional<MyUser> user_opt = myUserRepo.findByEmail(email);
+        user_opt.ifPresentOrElse(user->{
+            user.setPassword(new BCryptPasswordEncoder(5).encode(password));
+            myUserRepo.save(user);
+        },()->{throw new RuntimeException("Пользователь с таким email не найден");});
     }
 }

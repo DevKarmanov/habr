@@ -49,7 +49,12 @@ public class SecurityConfiguration {
                                 "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
                                 "https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js",
                                 "https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js",
-                                "/api/resume_v1/registerForm").permitAll()
+                                "/api/resume_v1/registerForm",
+                                "/api/resume_v1/recovery-page",
+                                "/api/resume_v1/password-recovery-send-mail",
+                                "/api/resume_v1/check-secret-code",
+                                "/api/resume_v1/generate-new-password",
+                                "/api/resume_v1/save-new-password").permitAll()
                         .requestMatchers("/api/resume_v1/admin").hasRole("ADMIN")
                         .requestMatchers("/api/resume_v1/user").hasAnyRole("ADMIN","USER")
                         .requestMatchers("/api/resume_v1/**").authenticated())
