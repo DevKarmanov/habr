@@ -2,6 +2,7 @@ package karm.van.habr.controller;
 
 import jakarta.servlet.http.HttpSession;
 import karm.van.habr.dto.SecretKeyDTO;
+import karm.van.habr.service.AdminKeyService;
 import karm.van.habr.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RegistrationController {
     private final UserRegistrationService userRegistrationService;
+    private final AdminKeyService adminKeyService;
 
     @GetMapping("/OtherInformation")
     public String otherInformationPage(Model model,
@@ -63,10 +66,17 @@ public class RegistrationController {
     public ResponseEntity<String> registerUser(@RequestParam(name = "username") String userName,
                                        @RequestParam(name = "email") String email,
                                        @RequestParam(name = "password") String password,
-                                       @RequestParam(name = "userImage") MultipartFile file) {
+                                       @RequestParam(name = "userImage") MultipartFile file,
+                                       @RequestParam(name = "admin_key",required = false) Optional<String> admin_key) {
 
         try {
-            userRegistrationService.saveUser(userName,email,password,file);
+            if (admin_key.isPresent() && !admin_key.get().isEmpty() && admin_key.get().equals(adminKeyService.getAdminRegKey())){
+                userRegistrationService.saveUser(userName,email,password,file,"ROLE_ADMIN");
+            } else if (admin_key.isPresent() && !admin_key.get().isEmpty() && !admin_key.get().equals(adminKeyService.getAdminRegKey())) {
+                throw new RuntimeException("Ключ не подходит. Если вы обычный пользователь, то вводить этот ключ вам не нужно");
+            } else {
+                userRegistrationService.saveUser(userName,email,password,file,"ROLE_USER");
+            }
             return ResponseEntity.accepted().body("Успех!");
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

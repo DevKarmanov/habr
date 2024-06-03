@@ -48,7 +48,7 @@ public class UserRegistrationService {
     private final static String BUSKET_NAME = "profile-images";
 
     @Transactional
-    public void saveUser(String userName, String email, String password, MultipartFile file) throws UserAlreadyCreateException, ImageTroubleException {
+    public void saveUser(String userName, String email, String password, MultipartFile file, String user_role) throws UserAlreadyCreateException, ImageTroubleException {
         log.info("Вызван метод saveUser");
         if (myUserRepo.existsByName(userName)) {
             throw new UserAlreadyCreateException("Пользователь с таким именем уже существует. Придумайте другой");
@@ -56,11 +56,11 @@ public class UserRegistrationService {
             throw new UserAlreadyCreateException("Пользователь с таким email уже существует. Авторизуйтесь");
         }
 
-        saveImageAndUser(userName, email, password, file);
+        saveImageAndUser(userName, email, password, file, user_role);
     }
 
 
-    private void saveImageAndUser(String userName, String email, String password, MultipartFile file) throws ImageTroubleException {
+    private void saveImageAndUser(String userName, String email, String password, MultipartFile file, String user_role) throws ImageTroubleException {
         log.info("Вызван метод saveImageAndUser");
         try {
             byte[] imageBytes = imageCompressionService.compressImage(file.getBytes(),file.getContentType());
@@ -76,7 +76,7 @@ public class UserRegistrationService {
                     .email(email)
                     .busketName(BUSKET_NAME)
                     .objectName(fileName)
-                    .role("ROLE_USER")
+                    .role(user_role)
                     .build();
 
             myUserRepo.saveAndFlush(myUser);

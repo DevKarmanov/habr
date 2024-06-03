@@ -28,11 +28,13 @@ public class MyCustomSuccessHandler implements AuthenticationSuccessHandler {
         Optional<MyUser> myUser = myUserRepo.findByName(authentication.getName());
 
         if (myUser.isPresent()){
-            if (!isAdmin){
-                if (myUser.get().getFirstname()==null){
-                    response.sendRedirect("/api/resume_v1/OtherInformation");
-                }else {
+            if (myUser.get().getFirstname()==null){
+                response.sendRedirect("/api/resume_v1/OtherInformation");
+            }else {
+                if (!isAdmin){
                     response.sendRedirect("/api/resume_v1/user");
+                }else {
+                    response.sendRedirect("/api/resume_v1/admin");
                 }
             }
         }
