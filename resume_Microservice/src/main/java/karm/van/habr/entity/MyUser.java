@@ -62,6 +62,9 @@ public class MyUser implements Serializable {
     @ManyToMany(mappedBy = "watchers")
     private List<Resume> checkedResumes;
 
+    @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
+    private List<Complaint> complaints;
+
 
     @ManyToMany
     @JoinTable(

@@ -26,4 +26,7 @@ public class ImageResume implements Serializable {
     @ManyToOne
     @JoinColumn(name = "resume_id")
     private Resume resume;
+
+    @ManyToOne
+    private Complaint complaint;
 }

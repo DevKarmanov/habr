@@ -6,14 +6,13 @@ import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Resume;
 import karm.van.habr.exceptions.ImageTroubleException;
+import karm.van.habr.helper.ImageService;
 import karm.van.habr.repo.CommentRepo;
 import karm.van.habr.repo.ImageResumeRepo;
 import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.ResumeRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -22,17 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -74,56 +69,8 @@ public class ResumeService {
 
         resumeRepo.saveAndFlush(resume);
 
-        imageSave(files, resume, BUSKET_NAME);
+        ImageService.imageSave(files,resume,BUSKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
         notificationProducer.sendNotifications(user.getId());
-    }
-
-    private void imageSave(MultipartFile[] files, Resume resume, String bucketName) throws ImageTroubleException, ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        ExecutorService executorService = Executors.newFixedThreadPool(files.length);
-
-        List<Callable<String>> tasks = getCallableList(files, bucketName, resume.getId());
-
-        minioServer.createBucketIfNotExist(BUSKET_NAME);
-
-        try {
-            List<Future<String>> results = executorService.invokeAll(tasks);
-
-            for (Future<String> result : results) {
-                ImageResume imageResume = ImageResume.builder()
-                        .resume(resume)
-                        .objectName(result.get())
-                        .bucketName(bucketName)
-                        .build();
-                imageResumeRepo.save(imageResume);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            log.error(e.getMessage());
-            throw new ImageTroubleException("Какая-то проблема с обработкой изображений. Приносим свои извинения. Попробуйте перезагрузить страницу и предоставить новые");
-        } finally {
-            executorService.shutdown();
-        }
-    }
-
-    private List<Callable<String>> getCallableList(MultipartFile[] files, String bucketName,Long resumeId) {
-        List<Callable<String>> tasks = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            tasks.add(() -> {
-                byte[] compressedImage = imageCompressionService.compressImage(file.getBytes(), file.getContentType());
-                if (compressedImage == null) {
-                    throw new RuntimeException();
-                }
-                InputStream inputStream = new ByteArrayInputStream(compressedImage);
-                String fileName = generateNameForImage(file,resumeId);
-                minioServer.uploadFile(bucketName, fileName, inputStream, compressedImage.length, file.getContentType());
-                return fileName;
-            });
-        }
-        return tasks;
-    }
-
-    private static String generateNameForImage(MultipartFile file,Long resumeId) {
-        return UUID.randomUUID()+"_"+file.getOriginalFilename() + "_" + resumeId;
     }
 
     @Transactional
@@ -182,7 +129,7 @@ public class ResumeService {
             }
             if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0){
                 try {
-                    imageSave(files.get(),resume,BUSKET_NAME);
+                    ImageService.imageSave(files.get(), resume,BUSKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
                 } catch (ImageTroubleException | InsufficientDataException | ServerException | ErrorResponseException |
                          IOException | NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException |
                          XmlParserException | InternalException e) {

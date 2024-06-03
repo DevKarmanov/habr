@@ -17,40 +17,12 @@
                 <a href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
-                <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
-                            <i class="bi-house fs-4"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                            <i class="bi-speedometer2 fs-4"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
-                            <i class="bi-table fs-4"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
-                            <i class="bi-heart fs-4"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Customers">
-                            <i class="bi-people fs-4"></i>
-                        </a>
-                    </li>
-                </ul>
                 <div class="dropdown">
                     <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
                         <img th:src="@{/api/resume_v1/user/image/{name}(name=${MyUserName})}" class="img-fluid avatar" alt="Аватарка">
                     </a>
                     <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
                         <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${MyUserName})}">Профиль</a></li>
                         <li>
                             <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
@@ -76,35 +48,51 @@
                                     </div><!-- end col -->
                                     <div class="col-md-9">
                                         <div class="ms-3">
-                                            <div>
-                                                <h4 class="card-title mb-2">О себе</h4>
-                                                <div th:text="${'Подписчиков: '+UserInfo.subscribers.size()}"></div>
-                                                <!-- Модальное окно просмотра подписок-->
-                                                <button th:if="${UserName.equals(MyUserName)}" type="button" class="btn btn-white btn-square position-absolute top-0 end-0 mt-3 me-5" data-bs-toggle="modal" data-bs-target="#ViewSubscribeModal">
-                                                    <i class="bi bi-person-heart"></i>
-                                                </button>
-                                                <form th:if="${!UserName.equals(MyUserName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post">
-                                                    <button type="submit" class="btn btn-white btn-square position-absolute top-0 end-0 mt-3 me-3 subscribe-button">
-                                                        <i class="bi bi-plus"></i>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h4 class="card-title mb-2">О себе</h4>
+                                                    <div th:text="${'Подписчиков: ' + UserInfo.subscribers.size()}"></div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Кнопка для модального окна просмотра подписок -->
+                                                    <button th:if="${UserName.equals(MyUserName)}" type="button" class="btn btn-white btn-square me-3" data-bs-toggle="modal" data-bs-target="#ViewSubscribeModal">
+                                                        <i class="bi bi-person-heart"></i>
                                                     </button>
-                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                                    <input type="hidden" name="subscribeOn" th:value="${UserInfo.id}">
-                                                </form>
 
-                                                <form th:if="${!UserName.equals(MyUserName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe">
-                                                    <button type="submit" class="btn btn-white btn-square position-absolute top-0 end-0 mt-3 me-3 unsubscribe-button">
-                                                        <i class="bi bi-x-lg"></i>
+                                                    <!-- Модальная кнопка для вызова модального окна жалобы -->
+                                                    <button th:if="${!UserName.equals(MyUserName)}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                                                        <i class="text-warning bi bi-exclamation-triangle-fill"></i>
                                                     </button>
-                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                                    <input type="hidden" name="unsubscribeOn" th:value="${UserInfo.id}">
-                                                </form>
-                                                <a th:if="${UserName.equals(MyUserName)}" th:href="@{/api/resume_v1/profile/{name}/edit-private-information(name=${UserName})}" type="button" class="btn btn-white btn-square position-absolute top-0 end-0 mt-3 me-3 redirect-to-edit">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                                <p th:text="${UserInfo.description}" class="mb-0 text-muted" style="width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                                    Hi I'm Jansh,has been the industry's standard dummy text To an English person alteration text.
-                                                </p>
+
+                                                    <!-- Форма для подписки -->
+                                                    <form th:if="${!UserName.equals(MyUserName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post" class="me-3">
+                                                        <button type="submit" class="btn btn-white btn-square">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                        <input type="hidden" name="subscribeOn" th:value="${UserInfo.id}">
+                                                    </form>
+
+                                                    <!-- Форма для отписки -->
+                                                    <form th:if="${!UserName.equals(MyUserName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe" method="post" class="me-3">
+                                                        <button type="submit" class="btn btn-white btn-square">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                        <input type="hidden" name="unsubscribeOn" th:value="${UserInfo.id}">
+                                                    </form>
+
+                                                    <!-- Кнопка редактирования -->
+                                                    <a th:if="${UserName.equals(MyUserName)}" th:href="@{/api/resume_v1/profile/{name}/edit-private-information(name=${UserName})}" class="btn btn-white btn-square me-3">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                </div>
                                             </div>
+
+                                            <!-- Описание пользователя -->
+                                            <p th:text="${UserInfo.description}" class="mb-0 text-muted" style="width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                Hi I'm Jansh, has been the industry's standard dummy text To an English person alteration text.
+                                            </p>
 
                                             <!-- Добавьте отступ после roleInCommand -->
                                             <div class="mt-2"></div>
@@ -154,8 +142,8 @@
                                             <div class="card position-relative">
                                                 <div style="display: flex; justify-content: flex-end; align-items: center;">
                                                     <div style="display: flex; flex-direction: column; margin-right: auto;">
-                                                        <div th:text="${'Просмотров: '+resume.resume_views}" style="margin-left: 10px;"></div>
-                                                        <div th:text="${'Лайков: '+resume.likedResumes.size()}" style="margin-left: 10px;"></div>
+                                                        <div th:if="${UserName.equals(MyUserName)}" th:text="${'Просмотров: '+resume.resume_views}" style="margin-left: 10px;"></div>
+                                                        <div th:if="${UserName.equals(MyUserName)}" th:text="${'Лайков: '+resume.likedResumes.size()}" style="margin-left: 10px;"></div>
                                                     </div>
                                                     <a th:if="${UserName.equals(MyUserName)}" th:data-card-id="${resume.id}" type="button" class="btn btn-white edit-button" data-bs-toggle="modal" style="width: 25px; height: 25px; padding: 0;">
                                                         <i class="bi bi-pencil-square"></i>
@@ -270,6 +258,36 @@
     </div>
 </div>
 
+<!-- Модальное окно жалобы -->
+<div class="modal fade" id="complaintModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Жалуйтесь с умом!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="complaintForm" action="/api/resume_v1/create-profile-complaint" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="problemDescription" class="form-label">Опишите причину жалобы</label>
+                        <textarea class="form-control" id="problemDescription" name="problemDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Можете приложить фотографии</label>
+                        <input class="form-control" type="file" id="images" name="images" multiple>
+                    </div>
+                </div>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="author_name" th:value="${MyUserName}">
+                <input type="hidden" name="inspect_name" th:value="${UserName}">
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Отправить жалобу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Модальное окно просмотра подписок-->
 <div class="modal fade" id="ViewSubscribeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -346,6 +364,44 @@
         });
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var complaintForm = document.getElementById('complaintForm');
+
+        complaintForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвращаем обычную отправку формы
+
+            var formData = new FormData(complaintForm); // Получаем данные формы
+            var csrfToken = complaintForm.querySelector("input[name='_csrf']").value; // Получаем CSRF токен
+
+            // Отправляем запрос на сервер
+            fetch(complaintForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken // Добавляем CSRF токен в заголовки
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Если запрос успешен, закрываем модальное окно и выводим сообщение об успешной отправке
+                        $('#complaintModal').modal('hide');
+                        alert('Жалоба успешно отправлена!');
+                    } else {
+                        // Если возникла ошибка, выводим сообщение об ошибке
+                        alert('Ошибка при отправке жалобы.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Проблема с выполнением запроса:', error);
+                    alert('Произошла ошибка при отправке жалобы.');
+                });
+        });
+    });
+
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="/js/redirectToEditCardForm.js"></script>
 <script src="/js/deleteCardRequest.js"></script>
 <script src="/js/deleteLikeRequest.js"></script>
