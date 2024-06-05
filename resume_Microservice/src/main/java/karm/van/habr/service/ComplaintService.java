@@ -2,6 +2,7 @@ package karm.van.habr.service;
 
 import karm.van.habr.entity.Complaint;
 import karm.van.habr.entity.ImageResume;
+import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Resume;
 import karm.van.habr.helper.ImageService;
 import karm.van.habr.repo.ComplaintRepo;
@@ -25,7 +26,8 @@ public class ComplaintService {
     private final MinioServer minioServer;
     private final ImageResumeRepo imageResumeRepo;
     private final ImageCompressionService imageCompressionService;
-    private final static String BUSKET_NAME = "complaint-images";
+    private final NotificationProducer notificationProducer;
+    private final static String BUKET_NAME = "complaint-images";
 
     @Transactional
     public void saveComplaint(String problemDescription, Optional<MultipartFile[]> files, String author_name, String inspect_name){
@@ -43,7 +45,7 @@ public class ComplaintService {
                     complaintRepo.save(complaint);
                     try {
                         if (files.isPresent()){
-                            ImageService.complaintImageSave(files.get(),complaint,BUSKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
+                            ImageService.complaintImageSave(files.get(),complaint,BUKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
                         }
                     }catch (Exception e){
                         throw new RuntimeException("Ошибка при обработке фотографии");
@@ -68,5 +70,37 @@ public class ComplaintService {
         }
         ImageResume imageResume = images.get(imageId);
         return minioServer.downloadFile(imageResume.getBucketName(), imageResume.getObjectName());
+    }
+
+    @Transactional
+    public void dismissComplaint(String description, String authorEmail, Long complaintId) {
+        deleteComplaint(complaintId);
+        notificationProducer.sendComplaintDecision(description,authorEmail);
+    }
+
+    public void deleteComplaint(Long complaintId){
+        Optional<Complaint> complaint = complaintRepo.findById(complaintId);
+        complaint.ifPresentOrElse(c->{
+            List<String> imagesNames = imageResumeRepo.findByComplaint(c).stream().map(ImageResume::getObjectName).toList();
+            try {
+                minioServer.deleteFiles(BUKET_NAME,imagesNames);
+            } catch (Exception e) {
+                throw new RuntimeException("Проблема с удалением фотографий");
+            }
+            imageResumeRepo.deleteAllByComplaint(c);
+            complaintRepo.deleteById(complaintId);
+        },()->{throw new RuntimeException("Такая жалоба не найдена");});
+    }
+
+     @Transactional
+    public void successComplaint(String description, String authorEmail, Long complaintId, LocalDateTime unlockAt, Long inspectId) {
+        Optional<MyUser> user = myUserRepo.findById(inspectId);
+        user.ifPresentOrElse(u->{
+            u.setUnlockAt(unlockAt);
+            u.setEnable(false);
+            myUserRepo.save(u);
+            deleteComplaint(complaintId);
+            notificationProducer.sendComplaintDecision(description,authorEmail);
+        },()->{throw new RuntimeException("Такой пользователь не найден");});
     }
 }

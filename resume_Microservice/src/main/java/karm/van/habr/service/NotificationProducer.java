@@ -1,10 +1,12 @@
 package karm.van.habr.service;
 
+import karm.van.habr.dto.ComplaintDTO;
 import karm.van.habr.dto.NotificationDTO;
 import karm.van.habr.dto.SecretKeyDTO;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.repo.MyUserRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationProducer {
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
@@ -23,6 +26,9 @@ public class NotificationProducer {
 
     @Value("${rabbitmq.routing.key.secretKey.name}")
     private String secretKeyRoutingKey;
+
+    @Value("${rabbitmq.routing.key.complaint.name}")
+    private String complaintRoutingKey;
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -44,6 +50,12 @@ public class NotificationProducer {
         SecretKeyDTO secretKeyDTO = new SecretKeyDTO(email,secretKey);
         rabbitTemplate.convertAndSend(exchangeName,secretKeyRoutingKey,secretKeyDTO);
         return secretKeyDTO;
+    }
+
+    public void sendComplaintDecision(String description, String authorEmail){
+        ComplaintDTO complaintDTO = new ComplaintDTO(authorEmail,description);
+        log.info("Отправляется на mail: "+authorEmail);
+        rabbitTemplate.convertAndSend(exchangeName,complaintRoutingKey,complaintDTO);
     }
 
 
