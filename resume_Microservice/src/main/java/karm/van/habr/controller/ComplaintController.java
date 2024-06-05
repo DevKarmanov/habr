@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,5 +53,37 @@ public class ComplaintController {
             log.error(e.getMessage());
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Async
+    @DeleteMapping("/send-dismiss-message")
+    public CompletableFuture<ResponseEntity<String>> sendDismissMessage(@RequestParam(name = "dismissBanDescription") String description,
+                                                                        @RequestParam(name = "authorEmail") String authorEmail,
+                                                                        @RequestParam(name = "complaintId") Long complaintId){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                complaintService.dismissComplaint(description,authorEmail,complaintId);
+                return ResponseEntity.ok("Вы отклонили данную жалобу");
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        });
+    }
+
+    @Async
+    @PostMapping("/send-success-message")
+    public CompletableFuture<ResponseEntity<String>> sendSuccessMessage(@RequestParam(name = "banDescription") String description,
+                                                                        @RequestParam(name = "authorEmail") String authorEmail,
+                                                                        @RequestParam(name = "complaintId") Long complaintId,
+                                                                        @RequestParam(name = "unlockAt") LocalDateTime unlockAt,
+                                                                        @RequestParam(name = "inspectId") Long inspectId){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                complaintService.successComplaint(description,authorEmail,complaintId,unlockAt,inspectId);
+                return ResponseEntity.ok("Вы приняли данную жалобу");
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        });
     }
 }

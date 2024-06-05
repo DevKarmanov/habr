@@ -3,9 +3,11 @@ package karm.van.habr.service;
 import karm.van.habr.entity.MyUser;
 import karm.van.habr.repo.MyUserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,4 +78,15 @@ public class MyUserService {
             return false;
         }
     }
+
+    @Transactional
+    @Scheduled(fixedRate = 600000) //каждые 10 минут
+    public void updateUserEnable(){
+        LocalDateTime localDateTime = LocalDateTime.now();
+        List<MyUser> users = myUserRepo.findAllByIsEnableFalseAndUnlockAtBefore(localDateTime);
+        for (MyUser user:users){
+            myUserRepo.updateUserStatus(user.getId(),true);
+        }
+    }
+
 }

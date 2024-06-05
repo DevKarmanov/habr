@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nast.marsh.dto.ComplaintDTO;
 import nast.marsh.dto.NotificationDTO;
 import nast.marsh.dto.SecretKeyDTO;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -36,25 +37,31 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = {"${rabbitmq.queue.secretKey.name}"})
     public void consumeSecretKey(SecretKeyDTO secretKeyDTO) throws MessagingException {
-        sendSecretKey(secretKeyDTO);
+        sendMessage(String.valueOf(secretKeyDTO.secretKey()),"Секретный пароль",secretKeyDTO.email(),"Ваш секретный ключ, не разглашайте его никому!");
     }
 
-    public void sendSecretKey(SecretKeyDTO secretKeyDTO) throws MessagingException {
-        log.info("Данные секретного ключа: "+secretKeyDTO.toString());
+    @RabbitListener(queues = {"${rabbitmq.queue.complaint.name}"})
+    public void consumeComplaintDecision(ComplaintDTO complaintDTO) throws MessagingException {
+        sendMessage(complaintDTO.description(),"Решение по вашей жалобе", complaintDTO.email(),"Недавно вы подали жалобу, и вот какое решение приняли модераторы");
+    }
+
+
+    public void sendMessage(String description,String subject, String email,String title) throws MessagingException {
+        log.info("Данные для отправки: "+description);
+        log.info("Отправляются на почту: "+email);
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message,true,"UTF-8");
 
         String htmlMsg = "<html>" +
                 "<body style='background-color: #f0f0f0; padding: 20px;'>" +
-                "<h1 style='color: #333;'>Ваш секретный ключ</h1>" +
-                "<p style='color: #555;'>Не разглашайте его никому!</p>" +
-                "<p style='color: #555;'>"+secretKeyDTO.secretKey()+"</p>" +
+                "<h1 style='color: #333;'>"+title+"</h1>" +
+                "<p style='color: #555;'>"+description+"</p>" +
                 "</body>" +
                 "</html>";
 
         helper.setFrom(emailSender);
-        helper.setTo(secretKeyDTO.email());
-        helper.setSubject("Ключ восстановления доступа к аккаунту");
+        helper.setTo(email);
+        helper.setSubject(subject);
         helper.setText(htmlMsg,true);
         javaMailSender.send(message);
 

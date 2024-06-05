@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -65,6 +66,9 @@ public class MyUser implements Serializable {
     @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
     private List<Complaint> complaints;
 
+    private boolean isEnable;
+
+    private LocalDateTime unlockAt;
 
     @ManyToMany
     @JoinTable(

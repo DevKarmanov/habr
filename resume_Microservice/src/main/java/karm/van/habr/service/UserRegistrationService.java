@@ -77,6 +77,8 @@ public class UserRegistrationService {
                     .busketName(BUSKET_NAME)
                     .objectName(fileName)
                     .role(user_role)
+                    .isEnable(true)
+                    .unlockAt(LocalDateTime.now())
                     .build();
 
             myUserRepo.saveAndFlush(myUser);
