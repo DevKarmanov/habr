@@ -79,14 +79,4 @@ public class MyUserService {
         }
     }
 
-    @Transactional
-    @Scheduled(fixedRate = 600000) //каждые 10 минут
-    public void updateUserEnable(){
-        LocalDateTime localDateTime = LocalDateTime.now();
-        List<MyUser> users = myUserRepo.findAllByIsEnableFalseAndUnlockAtBefore(localDateTime);
-        for (MyUser user:users){
-            myUserRepo.updateUserStatus(user.getId(),true);
-        }
-    }
-
 }

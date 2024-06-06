@@ -26,8 +26,9 @@ public class MainController {
     public String welcome(){return "This is unprotected page";}
 
     @GetMapping("/admin")
-    public String pageForAdmin(Model model){
+    public String pageForAdmin(Model model,Authentication authentication){
         model.addAttribute("ListOfComplaints",complaintService.getAllComplaints());
+        model.addAttribute("UserName",authentication.getName());
         return "admin-page";
     }
 

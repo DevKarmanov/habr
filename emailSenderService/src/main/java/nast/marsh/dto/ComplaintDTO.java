@@ -1,4 +1,4 @@
 package nast.marsh.dto;
 
-public record ComplaintDTO(String email, String description) {
+public record ComplaintDTO(String email, String description, String unlockAt) {
 }

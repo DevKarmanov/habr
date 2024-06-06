@@ -1,9 +1,7 @@
 package karm.van.habr.config;
 
 import karm.van.habr.entity.MyUser;
-import karm.van.habr.repo.MyUserRepo;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,12 +46,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        LocalDateTime localDateTime = LocalDateTime.now();
-
-        if (!user.isEnable()){
-            return user.getUnlockAt().isEqual(localDateTime) || user.getUnlockAt().isBefore(localDateTime);
-        }else {
-            return true;
-        }
+        return user.isEnable();
     }
 }

@@ -32,6 +32,7 @@ public class ProfileController {
                               Model model,
                               Authentication authentication){
         MyUser user = profileService.getUserInfo(name);
+        MyUser myUser = profileService.getUserInfo(authentication.getName());
         boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),name);
         log.info(user.toString());
         if (user.getFirstname()==null){
@@ -41,6 +42,7 @@ public class ProfileController {
             model.addAttribute("errorMessage",error);
             model.addAttribute("UserName",name);
             model.addAttribute("UserInfo",user);
+            model.addAttribute("MyInfo",myUser);
             model.addAttribute("ListOfSkills",profileService.getUserInfo(name).getSkills().split(","));
             model.addAttribute("MyUserName",authentication.getName());
             return "profile";

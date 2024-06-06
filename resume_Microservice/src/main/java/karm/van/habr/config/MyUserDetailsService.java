@@ -4,6 +4,7 @@ import karm.van.habr.entity.MyUser;
 import karm.van.habr.repo.MyUserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -23,9 +25,16 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<MyUser> user = myUserRepo.findByName(username);
+        MyUser user = myUserRepo.findByName(username)
+                .orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
-        return user.map(MyUserDetails::new)
-                .orElseThrow(()->new UsernameNotFoundException(username + " not found"));
+        LocalDateTime localDateTime = LocalDateTime.now();
+        if (!user.isEnable() && user.getUnlockAt().isAfter(localDateTime)){
+            throw new DisabledException("User is disabled");
+        }else if (!user.isEnable() && (user.getUnlockAt().isBefore(localDateTime) || user.getUnlockAt().isEqual(localDateTime))){
+            user.setEnable(true);
+            myUserRepo.save(user);
+        }
+        return new MyUserDetails(user);
     }
 }

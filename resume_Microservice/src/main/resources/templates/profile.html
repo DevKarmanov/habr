@@ -14,7 +14,10 @@
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                <a th:if="${MyInfo.role.equals('ROLE_USER')}" href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
+                </a>
+                <a th:if="${MyInfo.role.equals('ROLE_ADMIN')}" href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
                 <div class="dropdown">
@@ -22,7 +25,7 @@
                         <img th:src="@{/api/resume_v1/user/image/{name}(name=${MyUserName})}" class="img-fluid avatar" alt="Аватарка">
                     </a>
                     <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-                        <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
+                        <li th:if="${MyInfo.role.equals('ROLE_USER')}"><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
                         <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${MyUserName})}">Профиль</a></li>
                         <li>
                             <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
@@ -31,6 +34,7 @@
                 </div>
             </div>
         </div>
+        <!-- CSRF Token -->
         <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
             <div class="container">
@@ -60,12 +64,20 @@
                                                     </button>
 
                                                     <!-- Модальная кнопка для вызова модального окна жалобы -->
-                                                    <button th:if="${!UserName.equals(MyUserName)}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                                                    <button th:if="${!UserName.equals(MyUserName) && UserInfo.isEnable()}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#complaintModal">
                                                         <i class="text-warning bi bi-exclamation-triangle-fill"></i>
                                                     </button>
 
+                                                    <button th:if="${!UserName.equals(MyUserName) && UserInfo.isEnable() && MyInfo.role.equals('ROLE_ADMIN') && !UserInfo.role.equals('ROLE_ADMIN')}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#successBanModal">
+                                                        <i class="bi bi-ban"></i>
+                                                    </button>
+
+                                                    <div th:if="${!UserName.equals(MyUserName) && !UserInfo.isEnable()}">
+                                                        Заблокирован
+                                                    </div>
+
                                                     <!-- Форма для подписки -->
-                                                    <form th:if="${!UserName.equals(MyUserName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post" class="me-3">
+                                                    <form th:if="${!UserName.equals(MyUserName) && !subscribeOnThisAuthor && UserInfo.isEnable()}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post" class="me-3">
                                                         <button type="submit" class="btn btn-white btn-square">
                                                             <i class="bi bi-plus"></i>
                                                         </button>
@@ -106,7 +118,7 @@
                                                 </div><!-- end col -->
                                             </div><!-- end row -->
 
-                                            <ul class="nav nav-tabs nav-tabs-custom border-bottom-0 mt-3 nav-justfied" role="tablist">
+                                            <ul th:if="${MyInfo.role.equals('ROLE_USER')}" class="nav nav-tabs nav-tabs-custom border-bottom-0 mt-3 nav-justfied" role="tablist">
                                                 <li class="nav-item" role="presentation">
                                                     <a class="nav-link px-4 "  href="https://bootdey.com/snippets/view/profile-task-with-team-cards" target="__blank">
                                                         <span class="d-block d-sm-none"><i class="mdi mdi-menu-open"></i></span>
@@ -126,7 +138,7 @@
                             </div><!-- end card body -->
                         </div><!-- end card -->
 
-                        <div class="card">
+                        <div th:if="${UserInfo.role.equals('ROLE_USER')}" class="card">
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="team-tab" role="tabpanel">
                                     <h4 class="card-title mb-4">Проекты</h4>
@@ -172,7 +184,7 @@
                             </div>
                         </div><!-- end card -->
 
-                        <div th:if="${UserName.equals(MyUserName)}" class="card">
+                        <div th:if="${MyInfo.role.equals('ROLE_USER') && UserName.equals(MyUserName)}" class="card">
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="liked-projects-tab" role="tabpanel">
                                     <h4 class="card-title mb-4">Избранное</h4>
@@ -323,7 +335,69 @@
     </div>
 </div>
 
+<!-- Модальное окно бана -->
+<div class="modal fade" id="successBanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Дать бан</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="successBanForm" class="success-ban-form" action="/api/resume_v1/block-user" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="banDescription" class="form-label">Напишите причину блокировки</label>
+                        <textarea class="form-control" id="banDescription" name="banDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unlockAt" class="form-label">Укажите дату разблокировки</label>
+                        <input type="datetime-local" class="form-control" id="unlockAt" name="unlockAt" required>
+                    </div>
+                    <input type="hidden" id="userId" name="userId" th:value="${UserInfo.id}" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Заблокировать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 </body>
+<script>
+    document.querySelectorAll('.success-ban-form').forEach(form => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const userId = form.querySelector('[name="userId"]').value;
+            const csrfToken = document.getElementById('csrfTokenForLogout').value;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(formData)
+                });
+
+                if (response.ok) {
+                    alert("Вы успешно заблокировали пользователя");
+                   location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Ошибка: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка. Попробуйте позже.');
+            }
+        });
+    });
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Находим все формы для отписки и добавляем обработчик события submit

@@ -27,9 +27,6 @@ public class NotificationProducer {
     @Value("${rabbitmq.routing.key.secretKey.name}")
     private String secretKeyRoutingKey;
 
-    @Value("${rabbitmq.routing.key.complaint.name}")
-    private String complaintRoutingKey;
-
     private final RabbitTemplate rabbitTemplate;
 
     private final MyUserRepo myUserRepo;
@@ -52,10 +49,10 @@ public class NotificationProducer {
         return secretKeyDTO;
     }
 
-    public void sendComplaintDecision(String description, String authorEmail){
-        ComplaintDTO complaintDTO = new ComplaintDTO(authorEmail,description);
+    public void sendComplaintDecision(String description, String authorEmail, String routingKey, String unlockAt){
+        ComplaintDTO complaintDTO = new ComplaintDTO(authorEmail,description,unlockAt);
         log.info("Отправляется на mail: "+authorEmail);
-        rabbitTemplate.convertAndSend(exchangeName,complaintRoutingKey,complaintDTO);
+        rabbitTemplate.convertAndSend(exchangeName,routingKey,complaintDTO);
     }
 
 
