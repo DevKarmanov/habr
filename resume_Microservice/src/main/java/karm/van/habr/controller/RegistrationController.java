@@ -138,6 +138,10 @@ public class RegistrationController {
         String session_key = (String) httpSession.getAttribute("session_key");
         log.info("Ключ этой сессии: "+session_key);
         if (!session_key.equals(session_key_param)){
+            httpSession.removeAttribute("session_key");
+            httpSession.removeAttribute("email");
+            httpSession.removeAttribute("date_time_now");
+            httpSession.removeAttribute("secretKeyDTO");
             return "redirect:/api/resume_v1/recovery-page";
         }
         model.addAttribute("session_key",session_key_param);
@@ -161,6 +165,10 @@ public class RegistrationController {
                 try {
                     String email = (String) httpSession.getAttribute("email");
                     userRegistrationService.saveNewPassword(password,repeat_password,email);
+                    httpSession.removeAttribute("session_key");
+                    httpSession.removeAttribute("email");
+                    httpSession.removeAttribute("date_time_now");
+                    httpSession.removeAttribute("secretKeyDTO");
                     return ResponseEntity.ok("Вы успешно изменили пароль");
                 }catch (Exception e){
                     return ResponseEntity.badRequest().body(e.getMessage());

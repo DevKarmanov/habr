@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
@@ -36,6 +37,11 @@ public class SecurityConfiguration {
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
+    }
+
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler(){
+        return new MyCustomAuthenticationFailureHandler();
     }
 
     @Bean
@@ -60,7 +66,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/resume_v1/**").authenticated())
                 .formLogin(form->form
                         .loginPage("/api/resume_v1/login").permitAll()
-                        .successHandler(authenticationSuccessHandler()))
+                        .successHandler(authenticationSuccessHandler())
+                        .failureHandler(authenticationFailureHandler()))
                 .logout(out-> out
                         .logoutUrl("/api/resume_v1/logout")
                         .permitAll()

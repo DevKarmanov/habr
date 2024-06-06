@@ -14,6 +14,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.email.name}")
     private String emailQueueName;
 
+    @Value("${rabbitmq.queue.block.name}")
+    private String blockQueueName;
+
     @Value("${rabbitmq.queue.complaint.name}")
     private String complaintQueueName;
 
@@ -26,6 +29,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.routing.key.email.name}")
     private String emailRoutingKey;
 
+    @Value("${rabbitmq.routing.key.block.name}")
+    private String blockRoutingKey;
+
     @Value("${rabbitmq.routing.key.complaint.name}")
     private String complaintRoutingKey;
 
@@ -35,6 +41,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue emailQueue(){
         return new Queue(emailQueueName);
+    }
+
+    @Bean
+    public Queue blockQueue(){
+        return new Queue(blockQueueName);
     }
 
     @Bean
@@ -72,6 +83,14 @@ public class RabbitMQConfig {
                 .bind(complainQueue())
                 .to(exchange())
                 .with(complaintRoutingKey);
+    }
+
+    @Bean
+    public Binding blockUserBinding(){
+        return BindingBuilder
+                .bind(blockQueue())
+                .to(exchange())
+                .with(blockRoutingKey);
     }
 
     @Bean

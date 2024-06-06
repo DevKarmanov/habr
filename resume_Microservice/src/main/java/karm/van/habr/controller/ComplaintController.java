@@ -86,4 +86,19 @@ public class ComplaintController {
             }
         });
     }
+
+    @Async
+    @PostMapping("/block-user")
+    public CompletableFuture<ResponseEntity<String>> blockUser(@RequestParam(name = "banDescription") String description,
+                                                               @RequestParam(name = "unlockAt") LocalDateTime unlockAt,
+                                                               @RequestParam(name = "userId") Long userId){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                complaintService.successComplaint(description,unlockAt,userId);
+                return ResponseEntity.ok("Вы заблокировали пользователя");
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        });
+    }
 }

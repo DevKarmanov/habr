@@ -14,4 +14,6 @@ public interface ImageResumeRepo extends JpaRepository<karm.van.habr.entity.Imag
     List<ImageResume> findByComplaint(Complaint complaint);
 
     void deleteAllByComplaint(Complaint complaint);
+
+    void deleteAllByResume(Resume resume);
 }

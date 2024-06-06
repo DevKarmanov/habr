@@ -9,14 +9,11 @@ import nast.marsh.dto.NotificationDTO;
 import nast.marsh.dto.SecretKeyDTO;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 @Slf4j
@@ -42,15 +39,18 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = {"${rabbitmq.queue.complaint.name}"})
     public void consumeComplaintDecision(ComplaintDTO complaintDTO) throws MessagingException {
-        sendMessage(complaintDTO.description(),"Решение по вашей жалобе", complaintDTO.email(),"Недавно вы подали жалобу, и вот какое решение приняли модераторы");
+        sendMessage(complaintDTO.description(),"Решение по вашей жалобе", complaintDTO.email(),"Недавно вы подали жалобу, и вот какое решение приняли модераторы: ");
+    }
+
+    @RabbitListener(queues = {"${rabbitmq.queue.block.name}"})
+    public void banDescription(ComplaintDTO complaintDTO) throws MessagingException {
+        sendMessage(complaintDTO.description(),"Блокировка аккаунта", complaintDTO.email(),"Ваш аккаунт заблокировали по причине: ", complaintDTO.unlockAt());
     }
 
 
     public void sendMessage(String description,String subject, String email,String title) throws MessagingException {
         log.info("Данные для отправки: "+description);
         log.info("Отправляются на почту: "+email);
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message,true,"UTF-8");
 
         String htmlMsg = "<html>" +
                 "<body style='background-color: #f0f0f0; padding: 20px;'>" +
@@ -59,12 +59,34 @@ public class NotificationConsumer {
                 "</body>" +
                 "</html>";
 
+        send(email,subject,htmlMsg);
+    }
+
+    public void sendMessage(String description,String subject, String email,String title, String unlockAt) throws MessagingException {
+        log.info("Данные для отправки: "+description);
+        log.info("Отправляются на почту: "+email);
+
+        String htmlMsg = "<html>" +
+                "<body style='background-color: #f0f0f0; padding: 20px;'>" +
+                "<h1 style='color: #333;'>"+title+"</h1>" +
+                "<p style='color: #555;'>"+description+"</p>" +
+                "<p style='color: #555;'>"+"Блокировка до: "+unlockAt+"</p>" +
+                "<p style='color: #555;'>"+"Все ваши публикации стерты"+"</p>" +
+                "</body>" +
+                "</html>";
+
+        send(email,subject,htmlMsg);
+    }
+
+    private void send(String email,String subject, String htmlMsg) throws MessagingException {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message,true,"UTF-8");
+
         helper.setFrom(emailSender);
         helper.setTo(email);
         helper.setSubject(subject);
         helper.setText(htmlMsg,true);
         javaMailSender.send(message);
-
     }
 
     public void sendEmail(List<String> emails) throws MessagingException {
