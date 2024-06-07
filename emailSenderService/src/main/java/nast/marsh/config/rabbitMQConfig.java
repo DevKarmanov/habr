@@ -17,6 +17,9 @@ public class rabbitMQConfig {
     @Value("${rabbitmq.queue.email.name}")
     private String emailQueueName;
 
+    @Value("${rabbitmq.queue.post.name}")
+    private String postQueueName;
+
     @Value("${rabbitmq.queue.block.name}")
     private String blockQueueName;
 
@@ -41,9 +44,17 @@ public class rabbitMQConfig {
     @Value("${rabbitmq.routing.key.secretKey.name}")
     private String secretKeyRoutingKey;
 
+    @Value("${rabbitmq.routing.key.post.name}")
+    private String postRoutingKey;
+
     @Bean
     public Queue emailQueue(){
         return new Queue(emailQueueName);
+    }
+
+    @Bean
+    public Queue postQueue(){
+        return new Queue(postQueueName);
     }
 
     @Bean
@@ -94,6 +105,14 @@ public class rabbitMQConfig {
                 .bind(blockQueue())
                 .to(exchange())
                 .with(blockRoutingKey);
+    }
+
+    @Bean
+    public Binding postBinding(){
+        return BindingBuilder
+                .bind(postQueue())
+                .to(exchange())
+                .with(postRoutingKey);
     }
 
     @Bean

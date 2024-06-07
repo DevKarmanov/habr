@@ -438,43 +438,7 @@
         });
     });
 </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var complaintForm = document.getElementById('complaintForm');
-
-        complaintForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвращаем обычную отправку формы
-
-            var formData = new FormData(complaintForm); // Получаем данные формы
-            var csrfToken = complaintForm.querySelector("input[name='_csrf']").value; // Получаем CSRF токен
-
-            // Отправляем запрос на сервер
-            fetch(complaintForm.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken // Добавляем CSRF токен в заголовки
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        // Если запрос успешен, закрываем модальное окно и выводим сообщение об успешной отправке
-                        $('#complaintModal').modal('hide');
-                        alert('Жалоба успешно отправлена!');
-                    } else {
-                        // Если возникла ошибка, выводим сообщение об ошибке
-                        alert('Ошибка при отправке жалобы.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Проблема с выполнением запроса:', error);
-                    alert('Произошла ошибка при отправке жалобы.');
-                });
-        });
-    });
-
-</script>
+<script src="/js/complaintRequest.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="/js/redirectToEditCardForm.js"></script>
 <script src="/js/deleteCardRequest.js"></script>

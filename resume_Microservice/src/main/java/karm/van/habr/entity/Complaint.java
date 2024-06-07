@@ -23,10 +23,10 @@ public class Complaint {
     private MyUser author;
 
     @OneToOne
-    private MyUser inspect_user;
+    private MyUser inspectUser;
 
     @OneToOne
-    private Resume inspect_resume;
+    private Resume inspectResume;
 
     @OneToMany(mappedBy = "complaint")
     private List<ImageResume> images;

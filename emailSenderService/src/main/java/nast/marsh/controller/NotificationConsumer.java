@@ -47,6 +47,10 @@ public class NotificationConsumer {
         sendMessage(complaintDTO.description(),"Блокировка аккаунта", complaintDTO.email(),"Ваш аккаунт заблокировали по причине: ", complaintDTO.unlockAt());
     }
 
+    @RabbitListener(queues = {"${rabbitmq.queue.post.name}"})
+    public void postBanDescription(ComplaintDTO complaintDTO) throws MessagingException {
+        sendMessage(complaintDTO.description(),"Удаление вашей публикации", complaintDTO.email(),"Ваша публикация была удалена по причине: ");
+    }
 
     public void sendMessage(String description,String subject, String email,String title) throws MessagingException {
         log.info("Данные для отправки: "+description);
