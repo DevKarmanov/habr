@@ -26,10 +26,11 @@ public class ComplaintController {
     public CompletableFuture<ResponseEntity<String>> createProfileComplaint(@RequestParam(name = "problemDescription") String problemDescription,
                                                                             @RequestParam(name = "images",required = false) Optional<MultipartFile[]> images,
                                                                             @RequestParam(name = "author_name") String author_name,
-                                                                            @RequestParam(name = "inspect_name") String inspect_name){
+                                                                            @RequestParam(name = "inspect_name", required = false) Optional<String> inspect_name,
+                                                                            @RequestParam(name = "inspect_card_id", required = false) Optional<Long> inspect_card_id){
         return CompletableFuture.supplyAsync(()->{
            try {
-               complaintService.saveComplaint(problemDescription,images,author_name,inspect_name);
+               complaintService.saveComplaint(problemDescription,images,author_name,inspect_name,inspect_card_id);
                return ResponseEntity.ok("Отправили администраторам");
            }catch (Exception e){
                return ResponseEntity.badRequest().body(e.getMessage());
@@ -75,11 +76,16 @@ public class ComplaintController {
     public CompletableFuture<ResponseEntity<String>> sendSuccessMessage(@RequestParam(name = "banDescription") String description,
                                                                         @RequestParam(name = "authorEmail") String authorEmail,
                                                                         @RequestParam(name = "complaintId") Long complaintId,
-                                                                        @RequestParam(name = "unlockAt") LocalDateTime unlockAt,
-                                                                        @RequestParam(name = "inspectId") Long inspectId){
+                                                                        @RequestParam(name = "unlockAt",required = false) Optional<LocalDateTime> unlockAt,
+                                                                        @RequestParam(name = "inspectUserId",required = false) Optional<Long> inspectUserId,
+                                                                        @RequestParam(name = "inspectResumeId",required = false) Optional<Long> inspectResumeId){
         return CompletableFuture.supplyAsync(()->{
             try {
-                complaintService.successComplaint(description,authorEmail,complaintId,unlockAt,inspectId);
+                if (inspectUserId.isPresent()){
+                    complaintService.successComplaint(description,authorEmail,complaintId,unlockAt,inspectUserId);
+                }else if (inspectResumeId.isPresent()){
+                    complaintService.successComplaint(description,authorEmail,complaintId,inspectResumeId);
+                }
                 return ResponseEntity.ok("Вы приняли данную жалобу");
             }catch (Exception e){
                 return ResponseEntity.badRequest().body(e.getMessage());

@@ -41,30 +41,36 @@ public class ComplaintService {
     @Value("${rabbitmq.routing.key.block.name}")
     private String banRoutingKey;
 
+    @Value("${rabbitmq.routing.key.post.name}")
+    private String postRoutingKey;
+
     @Transactional
-    public void saveComplaint(String problemDescription, Optional<MultipartFile[]> files, String author_name, String inspect_name){
-
-        myUserRepo.findByName(author_name).ifPresentOrElse(
-                author->myUserRepo.findByName(inspect_name).ifPresentOrElse(inspect_user->{
-
-                    Complaint complaint = Complaint.builder()
-                            .description(problemDescription)
-                            .author(author)
-                            .inspect_user(inspect_user)
-                            .createdAt(LocalDateTime.now())
-                            .type("USER")
-                            .build();
-                    complaintRepo.save(complaint);
-                    try {
-                        if (files.isPresent()){
-                            ImageService.complaintImageSave(files.get(),complaint,BUCKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
-                        }
-                    }catch (Exception e){
-                        throw new RuntimeException("Ошибка при обработке фотографии");
-                    }
-
-                    },()->{throw new RuntimeException("Такой пользователь не найден");}),
-                ()->{throw new RuntimeException("Такой пользователь не найден");});
+    public void saveComplaint(String problemDescription, Optional<MultipartFile[]> files, String author_name, Optional<String> inspect_name,Optional<Long> inspect_card_id){
+        myUserRepo.findByName(author_name).ifPresentOrElse(author->{
+            Complaint complaint = new Complaint();
+            complaint.setDescription(problemDescription);
+            complaint.setCreatedAt(LocalDateTime.now());
+            complaint.setAuthor(author);
+            if (inspect_name.isPresent()){
+                myUserRepo.findByName(inspect_name.get()).ifPresentOrElse(inspectUser->{
+                    complaint.setInspectUser(inspectUser);
+                    complaint.setType("USER");
+                },()->{throw new RuntimeException("Пользователь, которого необходимо проверить, не найден");});
+            }else inspect_card_id.ifPresent(aLong -> resumeRepo.findById(aLong).ifPresentOrElse(card -> {
+                complaint.setInspectResume(card);
+                complaint.setType("POST");
+            }, () -> {
+                throw new RuntimeException("Такая карточка не найдена");
+            }));
+            complaintRepo.save(complaint);
+            try {
+                if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0){
+                    ImageService.complaintImageSave(files.get(),complaint,BUCKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
+                }
+            }catch (Exception e){
+                throw new RuntimeException("Ошибка при обработке фотографии");
+            }
+        },()->{throw new RuntimeException("Такой пользователей не найден");});
     }
 
     public List<Complaint> getAllComplaints() {
@@ -74,7 +80,7 @@ public class ComplaintService {
     public InputStream getMinioImageComplaint(Long complaintId, int imageId) throws Exception {
         Optional<Complaint> complaint = complaintRepo.findById(complaintId);
         if (complaint.isEmpty()){
-            throw new RuntimeException("Жалоба не найдено");
+            throw new RuntimeException("Жалоба не найдена");
         }
         List<ImageResume> images = imageResumeRepo.findByComplaint(complaint.get());
         if (imageId < 0 || imageId >= images.size()) {
@@ -106,21 +112,53 @@ public class ComplaintService {
     }
 
     @Transactional
-    public void successComplaint(String description, String authorEmail, Long complaintId, LocalDateTime unlockAt, Long inspectId) {
-        Optional<MyUser> user = myUserRepo.findById(inspectId);
+    public void deleteComplaint(Complaint complaint){
+        List<String> imagesNames = imageResumeRepo.findByComplaint(complaint).stream().map(ImageResume::getObjectName).toList();
+        try {
+            minioServer.deleteFiles(BUCKET_NAME,imagesNames);
+        } catch (Exception e) {
+            throw new RuntimeException("Проблема с удалением фотографий");
+        }
+        imageResumeRepo.deleteAllByComplaint(complaint);
+        complaintRepo.delete(complaint);
+    }
+
+    @Transactional
+    public void successComplaint(String description, String authorEmail, Long complaintId, Optional<LocalDateTime> unlockAt, Optional<Long> inspectId) {
+        Optional<MyUser> user = myUserRepo.findById(inspectId.get());
         user.ifPresentOrElse(u->{
-            blockUser(unlockAt,u);
+            blockUser(unlockAt.get(),u);
             deleteComplaint(complaintId);
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-            notificationProducer.sendComplaintDecision(description,authorEmail,complaintRoutingKey,unlockAt.format(dateTimeFormatter));
-            notificationProducer.sendComplaintDecision(description,u.getEmail(),banRoutingKey,unlockAt.format(dateTimeFormatter));
+            notificationProducer.sendComplaintDecision(description,authorEmail,complaintRoutingKey,unlockAt.get().format(dateTimeFormatter));
+            notificationProducer.sendComplaintDecision(description,u.getEmail(),banRoutingKey,unlockAt.get().format(dateTimeFormatter));
         },()->{throw new RuntimeException("Такой пользователь не найден");});
+    }
+
+    @Transactional
+    public void successComplaint(String description, String authorEmail, Long complaintId, Optional<Long> inspectResumeId) {
+        Optional<Resume> resume = resumeRepo.findById(inspectResumeId.get());
+        resume.ifPresentOrElse(res->{
+            deleteComplaint(complaintId);
+            List<String> images = imageResumeRepo.findByResume(res).parallelStream().map(ImageResume::getObjectName).toList();
+            try {
+                minioServer.deleteFiles(IMAGE_BUCKET_NAME,images);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            notificationProducer.sendComplaintDecision(description,res.getAuthor().getEmail(),postRoutingKey,null);
+            notificationProducer.sendComplaintDecision(description,authorEmail,complaintRoutingKey,null);
+            imageResumeRepo.deleteAllByResume(res);
+            resumeRepo.delete(res);
+        },()->{throw new RuntimeException("Такой пост не найден");});
     }
 
     @Transactional
     public void successComplaint(String description,LocalDateTime unlockAt, Long userId) {
         Optional<MyUser> user = myUserRepo.findById(userId);
         user.ifPresentOrElse(u->{
+            complaintRepo.findComplaintByInspectUser(u).ifPresent(this::deleteComplaint);
+            resumeRepo.findByAuthor(u).parallelStream().forEach(resume-> complaintRepo.findComplaintByInspectResume(resume).ifPresent(this::deleteComplaint));
             blockUser(unlockAt,u);
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
             notificationProducer.sendComplaintDecision(description,u.getEmail(),banRoutingKey,unlockAt.format(dateTimeFormatter));

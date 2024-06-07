@@ -122,11 +122,19 @@
 
                     <!-- Article Section -->
                     <div class="col-md-6">
-                        <h2 th:text="${cardInfo.title}" style="word-wrap: break-word;">Article Title</h2>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h2 th:text="${cardInfo.title}" class="mb-0" style="word-wrap: break-word;">Article Title</h2>
+
+                            <button th:if="${!cardInfo.author.name.equals(userName)}" type="button" class="btn btn-white btn-square ms-2" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                                <i class="text-warning bi bi-exclamation-triangle-fill"></i>
+                            </button>
+                        </div>
+
                         <p th:text="${cardInfo.description}" style="word-wrap: break-word;">
                             GeeksForGeeks is a Computer Science portal for geeks. It contains well written, well thought articles. This platform has been designed for every geek wishing to expand their knowledge, share their knowledge and is ready to grab their dream job. We have millions of articles, live as well as online courses, thousands of tutorials and much more just for the geek inside you.
                         </p>
                         <div class="d-flex justify-content-start align-items-center gap-2">
+
                             <a th:if="${!userName.equals(cardInfo.author.name)}" th:href="@{/api/resume_v1/profile/{name}(name=${cardInfo.author.name})}" class="d-flex align-items-center text-decoration-none">
                                 <img th:src="@{/api/resume_v1/user/image/{name}(name=${cardInfo.author.name})}"
                                      class="rounded-circle"
@@ -275,9 +283,38 @@
     </div>
 </div>
 
+<!-- Модальное окно жалобы -->
+<div class="modal fade" id="complaintModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Жалуйтесь с умом!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="complaintForm" action="/api/resume_v1/create-profile-complaint" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="problemDescription" class="form-label">Опишите причину жалобы</label>
+                        <textarea class="form-control" id="problemDescription" name="problemDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Можете приложить фотографии</label>
+                        <input class="form-control" type="file" id="images" name="images" multiple>
+                    </div>
+                </div>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="author_name" th:value="${userName}">
+                <input type="hidden" name="inspect_card_id" th:value="${cardInfo.id}">
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Отправить жалобу</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 <script src="/js/SubscribeRequest.js"></script>
 <script src="/js/UnSubscribeForm.js"></script>
 <script>
@@ -414,6 +451,7 @@
         });
     });
 </script>
+<script src="/js/complaintRequest.js"></script>
 <script src="/js/CreateCommentRequest.js"></script>
 <script src="/js/DeleteCommentRequest.js"></script>
 <script src="/js/patchCommentRequest.js"></script>

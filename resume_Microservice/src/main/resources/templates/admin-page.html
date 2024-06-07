@@ -72,10 +72,10 @@
                                     </div>
                                     <ul class="list-group list-group-flush">
                                         <li th:if="${complaint.type.equals('USER')}" class="list-group-item">
-                                            Жалоба на: <a th:href="@{/api/resume_v1/profile/{name}(name=${complaint.inspect_user.name})}" th:text="${complaint.inspect_user.name}">Профиль</a>
+                                            Жалоба на: <a th:href="@{/api/resume_v1/profile/{name}(name=${complaint.inspectUser.name})}" th:text="${complaint.inspectUser.name}">Профиль</a>
                                         </li>
                                         <li th:if="${complaint.type.equals('POST')}" class="list-group-item">
-                                            Жалоба на: <a th:href="@{/api/resume_v1/user/about/{cardId}(cardId=${complaint.inspect_resume.id})}">Пост</a>
+                                            Жалоба на: <a th:href="@{/api/resume_v1/user/about/{cardId}(cardId=${complaint.inspectResume.id})}">Пост</a>
                                         </li>
                                         <li class="list-group-item">
                                             Жалоба от: <a th:href="@{/api/resume_v1/profile/{name}(name=${complaint.author.name})}" th:text="${complaint.author.name}">Пользователя</a>
@@ -119,13 +119,14 @@
                         <label for="banDescription" class="form-label">Напишите причину блокировки</label>
                         <textarea class="form-control" id="banDescription" name="banDescription" rows="3"></textarea>
                     </div>
-                    <div class="mb-3">
+                    <div th:if="${complaint.type.equals('USER')}" class="mb-3">
                         <label for="unlockAt" class="form-label">Укажите дату разблокировки</label>
                         <input type="datetime-local" class="form-control" id="unlockAt" name="unlockAt">
                     </div>
                     <input type="hidden" name="authorEmail" th:value="${complaint.author.email}">
                     <input type="hidden" name="complaintId" th:value="${complaint.id}">
-                    <input type="hidden" name="inspectId" th:value="${complaint.inspect_user.id}">
+                    <input th:if="${complaint.inspectUser}" type="hidden" name="inspectUserId" th:value="${complaint.inspectUser.id}">
+                    <input th:if="${complaint.inspectResume}" type="hidden" name="inspectResumeId" th:value="${complaint.inspectResume.id}">
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-danger">Заблокировать</button>
