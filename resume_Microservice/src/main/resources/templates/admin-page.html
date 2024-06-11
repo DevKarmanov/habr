@@ -20,20 +20,21 @@
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                <a href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
-                <div class="dropdown">
-                    <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка">
-                    </a>
-                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-                        <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${UserName})}">Профиль</a></li>
-                        <li>
-                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
-                        </li>
-                    </ul>
-                </div>
+                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
+                </a>
+                <a th:href="@{/api/resume_v1/profile/{name}(name=${UserName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка">
+                </a>
+                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
+                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
+                </button>
+                <button class="d-block p-3 btn btn-white icon-link" title="Ключ регистрации новых администраторов" data-bs-toggle="modal" data-bs-placement="right" data-bs-target="#KeyChangeModal" style="background: transparent; border: none;">
+                    <i class="bi bi-key-fill"></i>
+                </button>
             </div>
         </div>
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
@@ -161,11 +162,33 @@
     </div>
 </div>
 
+<!-- Модальное окно ключа регистрации новых администраторов  -->
+<div class="modal fade" id="KeyChangeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ключ для регистрации новых пользователей</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="adminKey">Используйте этот ключ для регистрации администратора</label>
+                <div class="input-group mb-3">
+                    <input class="form-control" id="adminKey" type="text" th:value="${adminKey}" aria-label="Здесь должен быть ключ администратора" readonly>
+                    <button class="btn btn-outline-secondary" type="button" id="copyButton">Копировать</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="generateNewKeyButton">Сгенерировать новый ключ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- CSRF Token -->
 <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
 <script src="/js/successOrDismissBlock.js"></script>
-
+<script src="/js/copyKeyAndChange.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="/js/logoutRequest.js"></script>
 </body>

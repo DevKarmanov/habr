@@ -177,4 +177,14 @@ public class RegistrationController {
         });
     }
 
+    @PatchMapping("/generate-new-key")
+    public ResponseEntity<String> generateNewAdminKey(){
+        try {
+            adminKeyService.generateNewKey();
+            return ResponseEntity.ok("Вы успешно изменили ключ");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

@@ -14,24 +14,21 @@
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a th:if="${MyInfo.role.equals('ROLE_USER')}" href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                <a th:if="${MyInfo.role.equals('ROLE_USER')}" href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
-                <a th:if="${MyInfo.role.equals('ROLE_ADMIN')}" href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                <a th:if="${MyInfo.role.equals('ROLE_ADMIN')}" href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
-                <div class="dropdown">
-                    <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img th:src="@{/api/resume_v1/user/image/{name}(name=${MyUserName})}" class="img-fluid avatar" alt="Аватарка">
-                    </a>
-                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-                        <li th:if="${MyInfo.role.equals('ROLE_USER')}"><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
-                        <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${MyUserName})}">Профиль</a></li>
-                        <li>
-                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
-                        </li>
-                    </ul>
-                </div>
+                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
+                </a>
+                <a th:href="@{/api/resume_v1/profile/{name}(name=${MyUserName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${MyUserName})}" class="img-fluid avatar" alt="Аватарка">
+                </a>
+                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
+                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
+                </button>
             </div>
         </div>
         <!-- CSRF Token -->
@@ -61,6 +58,14 @@
                                                     <!-- Кнопка для модального окна просмотра подписок -->
                                                     <button th:if="${UserName.equals(MyUserName)}" type="button" class="btn btn-white btn-square me-3" data-bs-toggle="modal" data-bs-target="#ViewSubscribeModal">
                                                         <i class="bi bi-person-heart"></i>
+                                                    </button>
+
+                                                    <!-- Кнопки для показа модальных окон -->
+                                                    <button th:if="${!UserName.equals(MyUserName) && UserInfo.isEnable() && !UserInfo.role.equals('ROLE_ADMIN')}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#upgradeUserModal">
+                                                        <i class="text-success bi bi-chevron-double-up"></i>
+                                                    </button>
+                                                    <button th:if="${!UserName.equals(MyUserName) && UserInfo.isEnable() && UserInfo.role.equals('ROLE_ADMIN')}" type="button" class="btn btn-white btn-square" data-bs-toggle="modal" data-bs-target="#downgradeUserModal">
+                                                        <i class="text-danger bi bi-chevron-double-down"></i>
                                                     </button>
 
                                                     <!-- Модальная кнопка для вызова модального окна жалобы -->
@@ -118,7 +123,7 @@
                                                 </div><!-- end col -->
                                             </div><!-- end row -->
 
-                                            <ul th:if="${MyInfo.role.equals('ROLE_USER')}" class="nav nav-tabs nav-tabs-custom border-bottom-0 mt-3 nav-justfied" role="tablist">
+                                            <ul class="nav nav-tabs nav-tabs-custom border-bottom-0 mt-3 nav-justfied" role="tablist">
                                                 <li class="nav-item" role="presentation">
                                                     <a class="nav-link px-4 "  href="https://bootdey.com/snippets/view/profile-task-with-team-cards" target="__blank">
                                                         <span class="d-block d-sm-none"><i class="mdi mdi-menu-open"></i></span>
@@ -138,7 +143,7 @@
                             </div><!-- end card body -->
                         </div><!-- end card -->
 
-                        <div th:if="${UserInfo.role.equals('ROLE_USER')}" class="card">
+                        <div class="card">
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="team-tab" role="tabpanel">
                                     <h4 class="card-title mb-4">Проекты</h4>
@@ -184,7 +189,7 @@
                             </div>
                         </div><!-- end card -->
 
-                        <div th:if="${MyInfo.role.equals('ROLE_USER') && UserName.equals(MyUserName)}" class="card">
+                        <div th:if="${UserName.equals(MyUserName)}" class="card">
                             <div class="tab-content p-4">
                                 <div class="tab-pane active show" id="liked-projects-tab" role="tabpanel">
                                     <h4 class="card-title mb-4">Избранное</h4>
@@ -266,6 +271,44 @@
                     </div><!-- end col -->
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно повышение прав пользователя -->
+<div th:if="${MyInfo.role.equals('ROLE_ADMIN')}" class="modal fade" id="upgradeUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Повышайте только тех, кому доверяете!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="upgradeUserForm">
+                <div class="modal-footer">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <input type="hidden" name="userName" th:value="${UserInfo.name}">
+                    <button type="submit" id="submitUpgradeButton" class="btn btn-success">Повысить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно понижения прав пользователя -->
+<div th:if="${MyInfo.role.equals('ROLE_ADMIN')}" class="modal fade" id="downgradeUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Понижайте только тех, кому доверяете!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="downgradeUserForm">
+                <div class="modal-footer">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" id="csrfToken">
+                    <input type="hidden" name="userName" th:value="${UserInfo.name}" id="userName">
+                    <button type="submit" id="submitDowngradeButton" class="btn btn-success">Понизить</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -365,6 +408,70 @@
 
 
 </body>
+
+
+<script>
+    document.getElementById('upgradeUserForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const csrfToken = document.getElementById('csrfToken').value;
+        const userName = document.getElementById('userName').value;
+        const url = `/api/resume_v1/profile/${userName}/status-change`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ downgrade: false })
+            });
+
+            const result = await response.text();
+            if (response.ok) {
+                alert('Успешно повышен');
+                location.reload();
+            } else {
+                alert('Ошибка: ' + result);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Ошибка: ' + error.message);
+        }
+    });
+
+    document.getElementById('downgradeUserForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const csrfToken = document.getElementById('csrfToken').value;
+        const userName = document.getElementById('userName').value;
+        const url = `/api/resume_v1/profile/${userName}/status-change`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ downgrade: true })
+            });
+
+            const result = await response.text();
+            if (response.ok) {
+                location.reload();
+                alert('Успешно понижен');
+            } else {
+                alert('Ошибка: ' + result);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Ошибка: ' + error.message);
+        }
+    });
+</script>
+
 <script>
     document.querySelectorAll('.success-ban-form').forEach(form => {
         form.addEventListener('submit', async (event) => {

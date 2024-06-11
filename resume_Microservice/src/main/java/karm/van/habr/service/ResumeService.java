@@ -7,10 +7,7 @@ import karm.van.habr.entity.MyUser;
 import karm.van.habr.entity.Resume;
 import karm.van.habr.exceptions.ImageTroubleException;
 import karm.van.habr.helper.ImageService;
-import karm.van.habr.repo.CommentRepo;
-import karm.van.habr.repo.ImageResumeRepo;
-import karm.van.habr.repo.MyUserRepo;
-import karm.van.habr.repo.ResumeRepo;
+import karm.van.habr.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,6 +37,8 @@ public class ResumeService {
     private final CommentRepo commentRepo;
     private final MinioServer minioServer;
     private final NotificationProducer notificationProducer;
+    private final ComplaintService complaintService;
+    private final ComplaintRepo complaintRepo;
     private final static String BUSKET_NAME = "resume-images";
 
     @Transactional
@@ -94,6 +93,7 @@ public class ResumeService {
         }
         Optional<ImageResume> image_opt = imageResumeRepo.findById(imageId);
         image_opt.ifPresentOrElse(image->{
+
             imageResumeRepo.delete(image);
                     try {
                         minioServer.deleteFile(BUSKET_NAME,image.getObjectName());
@@ -145,6 +145,7 @@ public class ResumeService {
         Optional<Resume> resume_opt = resumeRepo.findById(cardId);
         resume_opt.ifPresentOrElse(resume -> {
             List<ImageResume> images = imageResumeRepo.findByResume(resume);
+            complaintRepo.findComplaintByInspectResume(resume).ifPresent(complaintService::deleteComplaint);
             resumeRepo.delete(resume);
             try {
                 minioServer.deleteFiles(BUSKET_NAME,images.stream().map(ImageResume::getObjectName).toList());
