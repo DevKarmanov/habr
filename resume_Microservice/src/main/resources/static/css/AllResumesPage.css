@@ -34,3 +34,7 @@
     color: #0062cc;
 }
 
+.disabled-card {
+    opacity: 0.5;
+    pointer-events: none;
+}

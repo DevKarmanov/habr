@@ -27,3 +27,4 @@ document.getElementById('unsubscribeForm').addEventListener('submit', function(e
             alert('Произошла ошибка при отписке от пользователя.');
         });
 });
+

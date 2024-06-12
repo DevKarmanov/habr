@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Отредактируйте карточку</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/css/bootstrap.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/EditResumePage.css">
 </head>
 <body>
@@ -25,12 +24,14 @@
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <p th:if="${errorMessage}" th:text="${errorMessage}" class="error text-danger text-center"></p>
                     <div class="form-group">
-                        <input type="text" name="title" class="form-control" placeholder="Заголовок" th:value="${cardInfo.title}"/>
+                        <label for="title">Заголовок вашего объявления</label>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="Заголовок" th:value="${cardInfo.title}"/>
                     </div>
                 </div>
                 <div class="col-md-12 mb-3">
                     <div class="form-group">
-                        <textarea name="description" class="form-control" th:text="${cardInfo.description}" placeholder="Опишите подробно ваш проект и кого хотите найти" style="width: 100%; height: 150px;"></textarea>
+                        <label for="description">Описание вашего объявления</label>
+                        <textarea name="description" id="description" class="form-control" th:text="${cardInfo.description}" placeholder="Опишите подробно ваш проект и кого хотите найти" style="width: 100%; height: 150px;"></textarea>
                     </div>
                 </div>
                 <div th:if="${cardInfo.images.size()<4}" class="col-md-12 mb-3 row "> <!-- Обертка для строки -->
@@ -43,7 +44,9 @@
                     <div class="col-md-1 mb-3"> <!-- Обертка для кнопки "Запустить" -->
                         <div class="form-group">
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rulesWindow">
-                                <i class="bi bi-info-circle"></i>
+                                <svg class="bi" width="25" height="24">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#info-circle"/>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -61,7 +64,11 @@
                         <form th:action="@{/api/resume_v1/profile/{name}/edit/{cardId}/delete(name=${PathUserName},cardId=${cardInfo.id})}" id="deleteFirstImageInForm">
                             <input type="hidden" name="imageIndex" th:value="${cardInfo.images.get(0).id}">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;"><i class="bi bi-trash-fill"></i></button>
+                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;">
+                                <svg class="bi text-white" width="25" height="24" fill="currentColor">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#trash-fill"/>
+                                </svg>
+                            </button>
                         </form>
                     </div>
                     <div th:each="image, imageIndex : ${cardInfo.images}" class="carousel-item" th:unless="${imageIndex.index == 0}" style="position: relative;">
@@ -69,16 +76,24 @@
                         <form th:action="@{/api/resume_v1/profile/{name}/edit/{cardId}/delete(name=${PathUserName},cardId=${cardInfo.id})}" th:id="${'deleteOtherImageInForm'+imageIndex.index}">
                             <input type="hidden" name="imageIndex" th:value="${image.id}">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;"><i class="bi bi-trash-fill"></i></button>
+                            <button class="btn btn-danger" type="submit" style="position: absolute; top: 10px; right: 140px;">
+                                <svg class="bi text-white" width="25" height="24" fill="currentColor">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#trash-fill"/>
+                                </svg>
+                            </button>
                         </form>
                     </div>
                 </div>
                 <button th:if="${cardInfo.images.size()>1}" class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExample' + ${cardInfo.id}" data-bs-slide="prev">
-                    <span class="bi bi-caret-left-fill black-icon" aria-hidden="true"></span>
+                    <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                        <use xlink:href="/images/icons/bootstrap-icons.svg#caret-left-fill"/>
+                    </svg>
                     <span class="visually-hidden">Previous</span>
                 </button>
                 <button th:if="${cardInfo.images.size()>1}" class="carousel-control-next" type="button" th:data-bs-target="'#carouselExample' + ${cardInfo.id}" data-bs-slide="next">
-                    <span class="bi bi-caret-right-fill black-icon" aria-hidden="true"></span>
+                    <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                        <use xlink:href="/images/icons/bootstrap-icons.svg#caret-right-fill"/>
+                    </svg>
                     <span class="visually-hidden">Next</span>
                 </button>
             </div>
@@ -134,97 +149,10 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script src="/js/changeCardRequest.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-<script src="/js/deleteCardImage.js"></script>
-<script>
-    // Функция для показа сообщения через модальное окно
-    function showMessage() {
-        // Проверяем, есть ли атрибут "error" в URL-адресе
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.has('error')) {
-            // Если атрибут "error" отсутствует, то создаем экземпляр модального окна и показываем его
-            const rulesModal = new bootstrap.Modal(document.getElementById('hintModal'));
-            rulesModal.show();
-        }
-    }
-
-    // Вызываем функцию для показа модального окна при загрузке страницы
-    showMessage();
-</script>
-<script>
-    $(document).ready(function(){
-        $('#hintModal .btn-danger').click(function(e){
-            e.preventDefault();
-            var isChecked = $('#disableNotificationCheckbox').is(':checked');
-            if (!isChecked) {
-                // Если чекбокс не отмечен, прекращаем выполнение функции
-                return;
-            }
-            var pathName = $('input[name="pathName"]').val();
-            var csrfToken = $('input[name="_csrf"]').val();
-            $.ajax({
-                url: '/api/resume_v1/profile/' + pathName + '/set-hint-show',
-                type: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                data: { hintValueSetting: isChecked },
-                success: function(response) {
-                    // Всплывающее окно для успешного ответа
-                    alert("Договорились, больше не покажем👌");
-                },
-                error: function(error) {
-                    // Всплывающее окно для неуспешного ответа
-                    alert("Какая-то ошибка⚠️. Просим вас потерпеть подсказку немного. Приносим свои извинения");
-                }
-            });
-        });
-    });
-
-</script>
-<script>
-    // Функция для отображения спиннера и изменения текста
-    function showSpinnerAndMessage() {
-        // Находим элементы спиннера и заголовка
-        const spinner = document.querySelector('.spinner-border');
-        const h3 = document.querySelector('.contact-form h3');
-        const logo = document.querySelector('.contact-image img');
-
-        // Показываем спиннер и скрываем логотип
-        spinner.classList.remove('d-none');
-        logo.classList.add('d-none');
-
-        // Изменяем текст заголовка
-        h3.textContent = 'Изменения применяются';
-
-        // Блокируем все кнопки на странице, кроме нужной
-        const buttons = document.querySelectorAll('button:not(.allowed-button)');
-        buttons.forEach(button => {
-            button.disabled = true;
-            button.classList.add('disabled');
-        });
-    }
-
-    // Находим все формы на странице
-    const forms = document.querySelectorAll('form');
-
-    // Для каждой формы добавляем обработчик события 'submit'
-    forms.forEach(form => {
-        form.addEventListener('submit', event => {
-            // Предотвращаем отправку формы по умолчанию
-            event.preventDefault();
-
-            // Вызываем функцию для отображения спиннера и изменения текста
-            showSpinnerAndMessage();
-
-            // Здесь можно добавить код для отправки формы на сервер
-            // Например, использовать fetch() или другой метод для отправки данных на сервер
-        });
-    });
-</script>
-
-
+<script src="/js/bootstrap.js"></script>
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/requests/changeAndDeleteCardRequest.js"></script>
+<script src="/js/requests/hint.js"></script>
+<script src="/js/downloadApplyAnimation.js"></script>
 </body>
 </html>

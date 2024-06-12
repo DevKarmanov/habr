@@ -91,4 +91,9 @@ public class MyUserService {
             myUserRepo.save(user);
         },()->{throw new RuntimeException("Такой пользователь не найден");});
     }
+
+    @Transactional
+    public MyUser getUserByName(String name){
+        return myUserRepo.findByName(name).orElse(null);
+    }
 }
