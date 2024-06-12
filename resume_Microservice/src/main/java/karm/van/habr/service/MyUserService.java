@@ -79,4 +79,21 @@ public class MyUserService {
         }
     }
 
+    @Transactional
+    public void changeUserStatus(String pathName, boolean downgrade) {
+        Optional<MyUser> user_opt = myUserRepo.findByName(pathName);
+        user_opt.ifPresentOrElse(user->{
+            if (downgrade){
+                user.setRole("ROLE_USER");
+            }else {
+                user.setRole("ROLE_ADMIN");
+            }
+            myUserRepo.save(user);
+        },()->{throw new RuntimeException("Такой пользователь не найден");});
+    }
+
+    @Transactional
+    public MyUser getUserByName(String name){
+        return myUserRepo.findByName(name).orElse(null);
+    }
 }

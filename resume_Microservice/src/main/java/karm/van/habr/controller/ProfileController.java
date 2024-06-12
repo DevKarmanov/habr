@@ -8,13 +8,17 @@ import karm.van.habr.service.UserRegistrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @RequestMapping("/api/resume_v1/profile")
@@ -162,5 +166,26 @@ public class ProfileController {
             log.info(e.getClass()+" "+e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @Async
+    @PatchMapping("/{name}/status-change")
+    public CompletableFuture<ResponseEntity<String>> changeUserStatus(@PathVariable(name = "name") String pathName,
+                                                                      @RequestBody Map<String, Boolean> body,
+                                                                      Authentication authentication) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Map<String, String> response = new HashMap<>();
+                boolean downgrade = body.getOrDefault("downgrade", false);
+                String action = downgrade ? " понижает " : " повышает ";
+                log.info("Пользователя " + pathName + action + "администратор " + authentication.getName());
+                myUserService.changeUserStatus(pathName, downgrade);
+                log.info("Успешно изменены права");
+                return ResponseEntity.accepted().body("Успешно изменен");
+            } catch (Exception e) {
+                log.error(e.getClass() + " " + e.getMessage());
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        });
     }
 }

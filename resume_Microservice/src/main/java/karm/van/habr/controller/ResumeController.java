@@ -72,6 +72,7 @@ public class ResumeController {
         model.addAttribute("subscribeOnThisAuthor",checkSub);
         model.addAttribute("cardInfo",resume);
         model.addAttribute("userName",authentication.getName());
+        model.addAttribute("myInfo",myUserService.getUserByName(authentication.getName()));
         model.addAttribute("ListOfComments",AllComments);
         model.addAttribute("errorMessage",error);
         model.addAttribute("likedThisPost",checkLike);
@@ -116,8 +117,10 @@ public class ResumeController {
 
     @GetMapping("/resumeForm")
     public String resumeForm(Model model,
-                             @RequestParam(value = "error",required = false) String error){
+                             @RequestParam(value = "error",required = false) String error,
+                             Authentication authentication){
         model.addAttribute("errorMessage",error);
+        model.addAttribute("userInfo",myUserService.getUserByName(authentication.getName()));
         return "resumeForm";
     }
 

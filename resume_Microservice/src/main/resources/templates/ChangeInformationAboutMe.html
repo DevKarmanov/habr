@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/jquery-ui.min.css">
     <link rel="stylesheet" href="/css/OtherInformationForm.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <title>Title</title>
-
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/js/jquery-ui.min.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <title>Измените информацию о себе</title>
 </head>
 <body>
 <!-- Navbar-->
@@ -42,7 +40,9 @@
                     <div class="input-group col-lg-6 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-person-fill"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#person-fill"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.name}" id="login" type="text" name="login" placeholder="Ваш логин" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
@@ -51,7 +51,9 @@
                     <div class="input-group col-lg-6 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-person-fill"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#person-fill"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.firstname}" id="firstName" type="text" name="firstname" placeholder="Имя" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
@@ -61,7 +63,9 @@
                     <div class="input-group col-lg-6 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-person-fill"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#person-fill"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.lastname}" id="lastName" type="text" name="lastname" placeholder="Фамилия" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
@@ -74,7 +78,9 @@
                     <div class="input-group col-lg-6 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-envelope-fill"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#envelope-fill"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.email}" id="email" type="text" name="email" placeholder="Email" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0">
@@ -83,7 +89,9 @@
                     <div class="input-group col-lg-12 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-globe-asia-australia"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#globe-asia-australia"/>
+                                    </svg>
                                 </span>
                         </div>
                         <select id="country" name="country" class="custom-select form-control bg-white border-left-0 flex-grow-1 border-start-0 border-md h-100 font-weight-bold text-muted">
@@ -104,7 +112,9 @@
                     <div class="input-group col-lg-12 mb-4 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-controller"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#controller"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.roleInCommand}" type="text" id="jobInput" name="jobtitle" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0" placeholder="Введите свою основную роль в команде">
@@ -113,7 +123,9 @@
                     <div class="input-group col-lg-12 mb-2 align-items-center">
                         <div class="input-group-prepend">
                                 <span class="input-group-text bg-white px-4 border-md border-end-0 rounded-end-0">
-                                    <i class="bi bi-bookmark-plus-fill"></i>
+                                    <svg class="bi" width="25" height="24">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#bookmark-plus-fill"/>
+                                    </svg>
                                 </span>
                         </div>
                         <input th:value="${UserInfo.skills}" type="text" id="skillsInput" name="skillsInput" class="form-control bg-white border-left-0 border-md flex-grow-1 border-start-0" placeholder="Java, C++, Python, HTML ">
@@ -167,51 +179,6 @@
 </div>
 
 </body>
-<script src="/js/OtherInformationFormChange.js"></script>
-<script>
-    // Функция для показа сообщения через модальное окно
-    function showMessage() {
-        // Проверяем, есть ли атрибут "error" в URL-адресе
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.has('error')) {
-            // Если атрибут "error" отсутствует, то создаем экземпляр модального окна и показываем его
-            const rulesModal = new bootstrap.Modal(document.getElementById('hintModal'));
-            rulesModal.show();
-        }
-    }
-
-    // Вызываем функцию для показа модального окна при загрузке страницы
-    showMessage();
-</script>
-<script>
-    $(document).ready(function(){
-        $('#hintModal .btn-danger').click(function(e){
-            e.preventDefault();
-            var isChecked = $('#disableNotificationCheckbox').is(':checked');
-            if (!isChecked) {
-                // Если чекбокс не отмечен, прекращаем выполнение функции
-                return;
-            }
-            var pathName = $('input[name="pathName"]').val();
-            var csrfToken = $('input[name="_csrf"]').val();
-            $.ajax({
-                url: '/api/resume_v1/profile/' + pathName + '/set-hint-show',
-                type: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                data: { hintValueSetting: isChecked },
-                success: function(response) {
-                    // Всплывающее окно для успешного ответа
-                    alert("Договорились, больше не покажем👌");
-                },
-                error: function(error) {
-                    // Всплывающее окно для неуспешного ответа
-                    alert("Какая-то ошибка⚠️. Просим вас потерпеть подсказку немного. Приносим свои извинения");
-                }
-            });
-        });
-    });
-
-</script>
+<script src="/js/requests/OtherInformationFormChange.js"></script>
+<script src="/js/requests/hint.js"></script>
 </html>

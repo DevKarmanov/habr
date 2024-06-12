@@ -1,5 +1,6 @@
 package karm.van.habr.controller;
 
+import karm.van.habr.service.AdminKeyService;
 import karm.van.habr.service.ComplaintService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import java.io.InputStream;
 @Slf4j
 public class MainController {
     private final ComplaintService complaintService;
+    private final AdminKeyService adminKeyService;
 
     @GetMapping("/welcome")
     public String welcome(){return "This is unprotected page";}
@@ -29,6 +31,7 @@ public class MainController {
     public String pageForAdmin(Model model,Authentication authentication){
         model.addAttribute("ListOfComplaints",complaintService.getAllComplaints());
         model.addAttribute("UserName",authentication.getName());
+        model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
         return "admin-page";
     }
 

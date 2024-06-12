@@ -1,75 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/aboutCard.css">
+    <script src="/js/jquery-3.7.1.min.js"></script>
     <title>Ознакомьтесь с данным объявлением</title>
-  <style>
-    .bubble .wrapper {
-      display: flex;
-      flex-direction: row;
-      margin: 40px 14px;
-    }
-
-    .children .bubble-secondary .wrapper {
-      flex-direction: row-reverse;
-    }
-    
-    .children .bubble-secondary .wrapper .messenger-bulle {
-      background: #f1f0f0;
-      color: black;
-    }
-    
-    .messenger-bulle .meta {
-      display: block;
-      position: absolute;
-      width: 100%;
-      height: 20px;
-      color: grey;
-      text-align: center;
-      bottom: -25px;
-      font-weight: 600;
-      font-size: .8em;
-    }
-
-    .carousel-item img {
-            width: 100%;
-            height: auto; /* Allow the height to adjust automatically */
-            max-height: 400px; /* Set a maximum height */
-            object-fit: contain; /* Scale the image to fit the container without cropping */
-    }
-
-    .avatar {
-        width: 50px; /* задайте одинаковое значение для width и height */
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover; /* изображение сохраняет свои пропорции и покрывает весь контейнер */
-    }
-
-    .dot {
-        height: 7px;
-        width: 7px;
-        margin-top: 3px;
-        background-color: #bbb;
-        border-radius: 50%;
-        display: inline-block;
-    }
-
-
-    .comment-text-sm {
-        word-wrap: break-word; /* Это свойство заставляет текст переноситься на новую строку, если он слишком длинный */
-        overflow-wrap: break-word; /* Альтернативное свойство для старых версий браузеров */
-        word-break: break-word; /* Альтернативное свойство для старых версий браузеров */
-    }
-
-    .highlighted-comment {
-        box-shadow: 0 0 10px 5px rgba(255, 255, 153, 0.7); /* Создаем размытую границу */
-    }
-
-  </style>
 </head>
 
 <body>
@@ -77,21 +13,21 @@
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                <a th:if="${myInfo.role.equals('ROLE_USER')}" href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
                     <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
                 </a>
-                <div class="dropdown">
-                    <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img th:src="@{/api/resume_v1/user/image/{name}(name=${userName})}" class="img-fluid avatar" alt="Аватарка">
-                    </a>
-                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-                        <li><a class="dropdown-item" href="/api/resume_v1/resumeForm">Выложить объявление</a></li>
-                        <li><a class="dropdown-item" th:href="@{/api/resume_v1/profile/{name}(name=${userName})}">Профиль</a></li>
-                        <li>
-                            <button class="dropdown-item" id="logoutButton">Выйти из аккаунта</button>
-                        </li>
-                    </ul>
-                </div>
+                <a th:if="${myInfo.role.equals('ROLE_ADMIN')}" href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
+                </a>
+                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
+                </a>
+                <a th:href="@{/api/resume_v1/profile/{name}(name=${userName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${userName})}" class="img-fluid avatar" alt="Аватарка">
+                </a>
+                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
+                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
+                </button>
             </div>
         </div>
         <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -126,7 +62,9 @@
                             <h2 th:text="${cardInfo.title}" class="mb-0" style="word-wrap: break-word;">Article Title</h2>
 
                             <button th:if="${!cardInfo.author.name.equals(userName)}" type="button" class="btn btn-white btn-square ms-2" data-bs-toggle="modal" data-bs-target="#complaintModal">
-                                <i class="text-warning bi bi-exclamation-triangle-fill"></i>
+                                <svg class="bi text-warning" width="20" height="20" fill="currentColor">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#exclamation-triangle-fill"/>
+                                </svg>
                             </button>
                         </div>
 
@@ -141,28 +79,39 @@
                                      style="width: 40px; height: 40px; object-fit: cover;"
                                      alt="Avatar" />
                             </a>
-                            <form th:if="${!cardInfo.author.name.equals(userName) && !likedThisPost}" id="addLikeForm" class="mb-0 d-flex align-items-center">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken">
-                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                <button type="submit" class="btn btn-white text-danger mb-0" id="likeButton">
-                                    <i class="bi bi-heart" id="likeIcon"></i>
-                                </button>
-                            </form>
-                            <form th:if="${!cardInfo.author.name.equals(userName) && likedThisPost}" id="removeLikeForm" th:action="@{/api/resume_v1/remove-like}" class="mb-0 d-flex align-items-center">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
-                                <button type="submit" class="btn btn-white text-danger mb-0" id="removeLikeButton">
-                                    <i class="bi bi-heart-fill" id="removeLikeIcon"></i>
-                                </button>
-                            </form>
-                            <div th:if="${!cardInfo.author.name.equals(userName)}" id="likeQuantity" th:text="${cardInfo.likedResumes.size()}"></div>
+                            <div th:if="${!cardInfo.author.name.equals(userName)}" class="d-flex align-items-center">
+                                <form th:if="${!likedThisPost}" id="addLikeForm" class="mb-0 d-flex align-items-center me-3">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken">
+                                    <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                    <button type="submit" class="btn btn-white mb-0" id="likeButton">
+                                        <svg class="bi" width="20" height="20">
+                                            <use xlink:href="/images/icons/bootstrap-icons.svg#heart"/>
+                                        </svg>
+                                        <span class="ms-1" th:text="${cardInfo.likedResumes.size()}"></span>
+                                    </button>
+                                </form>
+                                <form th:if="${likedThisPost}" id="removeLikeForm" th:action="@{/api/resume_v1/remove-like}" class="mb-0 d-flex align-items-center me-3">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                                    <button type="submit" class="btn btn-white mb-0" id="removeLikeButton">
+                                        <svg class="bi text-danger" width="20" height="20" fill="currentColor">
+                                            <use xlink:href="/images/icons/bootstrap-icons.svg#heart-fill"/>
+                                        </svg>
+                                        <span class="ms-1" th:text="${cardInfo.likedResumes.size()}"></span>
+                                    </button>
+                                </form>
+                            </div>
                             <div th:if="${cardInfo.author.name.equals(userName)}" th:text="${'Количество лайков: '+cardInfo.likedResumes.size()}"></div>
-                            <button type="button" class="btn btn-white text-primary ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
-                                <i class="bi bi-chat-right-text-fill"></i>
+                            <button type="button" class="btn btn-white ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
+                                <svg class="bi text-primary" width="20" height="20" fill="currentColor">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#chat-right-text-fill"/>
+                                </svg>
                             </button>
                             <form th:if="${!cardInfo.author.name.equals(userName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post">
                                 <button type="submit" class="btn btn-primary ms-2 mb-0 d-flex align-items-center subscribe-button">
-                                    <i class="bi bi-plus"></i>Подписаться на пользователя
+                                    <svg class="bi text-light" width="20" height="20" fill="currentColor">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#plus"/>
+                                    </svg>Подписаться на пользователя
                                 </button>
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                 <input type="hidden" name="subscribeOn" th:value="${cardInfo.author.id}">
@@ -170,7 +119,9 @@
 
                             <form th:if="${!cardInfo.author.name.equals(userName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe">
                                 <button type="submit" class="btn btn-danger ms-2 mb-0 d-flex align-items-center unsubscribe-button">
-                                    <i class="bi bi-x-lg"></i>Отписаться от пользователя
+                                    <svg class="bi text-light" width="20" height="20" fill="currentColor">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#x-lg"/>
+                                    </svg>Отписаться на пользователя
                                 </button>
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                 <input type="hidden" name="unsubscribeOn" th:value="${cardInfo.author.id}">
@@ -196,10 +147,14 @@
                             </span>
                             <div class="ms-auto"> <!-- Этот блок обеспечит размещение кнопок справа -->
                                 <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#successModal'+comment.id}">
-                                    <i class="bi bi-trash-fill"></i>
+                                    <svg class="bi" width="20" height="20">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#trash-fill"/>
+                                    </svg>
                                 </button>
                                 <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#editModal'+comment.id}">
-                                    <i class="bi bi-pencil-square"></i>
+                                    <svg class="bi" width="20" height="20">
+                                        <use xlink:href="/images/icons/bootstrap-icons.svg#pencil-square"/>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -234,7 +189,8 @@
                                                 <input type="hidden" name="cardId" th:value="${cardInfo.id}">
                                                 <!-- Comment input -->
                                                 <div class="form-outline mb-4">
-                                                    <textarea th:text="${comment.text}" name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
+                                                    <label for="commentChangeText" class="form-label">Исправьте свой комментарий</label>
+                                                    <textarea id="commentChangeText" th:text="${comment.text}" name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
                                                 </div>
                                                 <!-- Submit button -->
                                                 <button type="submit" class="btn btn-primary editCommentButton">Изменить</button>
@@ -246,7 +202,9 @@
                         </div>
                         <div class="comment-text-sm"><span th:text="${comment.text}"></span>
                             <button th:id="${'comment-id-'+comment.id}" class="btn btn-white me-2 btn-reply" data-bs-toggle="modal" data-bs-target="#PostCommentModal" th:data-comment-id="${comment.id}">
-                                <i class="bi bi-reply-fill"></i>
+                                <svg class="bi" width="20" height="20">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#reply-fill"/>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -272,7 +230,8 @@
                         <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}">
                         <!-- Comment input -->
                         <div class="form-outline mb-4">
-                            <textarea name="text" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
+                            <label for="commentText" class="form-label">Оставьте свой комментарий</label>
+                            <textarea name="text" id="commentText" class="form-control" rows="3" placeholder="Ваш комментарий"></textarea>
                         </div>
                         <!-- Submit button -->
                         <button type="button" id="submitCommentButton" class="btn btn-primary">Опубликовать</button>
@@ -314,148 +273,14 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-<script src="/js/SubscribeRequest.js"></script>
-<script src="/js/UnSubscribeForm.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('addLikeForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            var form = event.target;
-            var formData = new FormData(form);
-            var csrfToken = document.getElementById('csrfToken').value;
-
-            fetch('/api/resume_v1/add-like', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken // Add CSRF token to the headers
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        var likeIcon = document.getElementById('likeIcon');
-                        if (likeIcon.classList.contains('bi-heart')) {
-                            likeIcon.classList.remove('bi-heart');
-                            likeIcon.classList.add('bi-heart-fill');
-                        } else {
-                            likeIcon.classList.remove('bi-heart-fill');
-                            likeIcon.classList.add('bi-heart');
-                        }
-
-                        // Обновление значения likeQuantity
-                        var likeQuantity = document.getElementById('likeQuantity');
-                        likeQuantity.textContent = parseInt(likeQuantity.textContent) + 1;
-                    } else {
-                        throw new Error('Failed to like the post');
-                    }
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                    alert('An error occurred while liking the post.');
-                });
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('removeLikeForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            var form = event.target;
-            var formData = new FormData(form);
-            var csrfToken = form.querySelector("input[name='_csrf']").value;
-
-            fetch(form.action, {
-                method: 'DELETE',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken // Add CSRF token to the headers
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        var likeIcon = document.getElementById('removeLikeIcon');
-                        if (likeIcon.classList.contains('bi-heart-fill')) {
-                            likeIcon.classList.remove('bi-heart-fill');
-                            likeIcon.classList.add('bi-heart');
-                        } else {
-                            likeIcon.classList.remove('bi-heart');
-                            likeIcon.classList.add('bi-heart-fill');
-                        }
-
-                        // Обновление значения likeQuantity
-                        var likeQuantity = document.getElementById('likeQuantity');
-                        likeQuantity.textContent = parseInt(likeQuantity.textContent) - 1;
-                    } else {
-                        throw new Error('Failed to unlike the post');
-                    }
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                    alert('An error occurred while unliking the post.');
-                });
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Находим кнопку, которая открывает модальное окно и имеет класс create-comment
-        var modalButton = document.querySelector('.create-comment');
-        // Находим поле replyToCommentId
-        var replyToCommentIdInput = document.getElementById('replyToCommentId');
-
-        // Добавляем обработчик события при клике на кнопку, которая открывает модальное окно
-        modalButton.addEventListener('click', function() {
-            // Очищаем значение поля replyToCommentId
-            replyToCommentIdInput.value = '';
-        });
-    });
-
-    // JavaScript для заполнения скрытого поля при ответе на комментарий
-    document.querySelectorAll('.btn-reply').forEach(button => {
-        button.addEventListener('click', function() {
-            const commentId = this.getAttribute('data-comment-id');
-            document.getElementById('replyToCommentId').value = commentId;
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Обработчик события для всех ссылок, к которым вы хотите добавить подсветку комментария
-        document.querySelectorAll('a.comment-link').forEach(link => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault(); // Предотвращаем стандартное поведение перехода по ссылке
-
-                // Удаляем подсветку со всех комментариев
-                document.querySelectorAll('.highlighted-comment').forEach(comment => {
-                    comment.classList.remove('highlighted-comment');
-                });
-
-                // Получаем идентификатор комментария из атрибута href ссылки
-                const commentId = this.getAttribute('href').substring(1); // Убираем решетку (#) из начала строки
-
-                // Находим комментарий с соответствующим идентификатором и добавляем ему класс для подсветки
-                const comment = document.getElementById(commentId);
-                if (comment) {
-                    comment.classList.add('highlighted-comment');
-                }
-
-                // Переходим по ссылке
-                window.location.href = this.href;
-            });
-        });
-    });
-</script>
-<script src="/js/complaintRequest.js"></script>
-<script src="/js/CreateCommentRequest.js"></script>
-<script src="/js/DeleteCommentRequest.js"></script>
-<script src="/js/patchCommentRequest.js"></script>
-<script src="/js/logoutRequest.js"></script>
+<script src="/js/bootstrap.js"></script>
+<script th:if="${!subscribeOnThisAuthor}" src="/js/requests/SubscribeRequest.js"></script>
+<script th:if="${subscribeOnThisAuthor}" src="/js/requests/UnSubscribeForm.js"></script>
+<script th:if="${!likedThisPost}" src="/js/requests/AddLike.js"></script>
+<script th:if="${likedThisPost}" src="/js/requests/RemoveLike.js"></script>
+<script th:if="${!cardInfo.author.name.equals(userName)}" src="/js/requests/complaintRequest.js"></script>
+<script src="/js/requests/CommentRequests.js"></script>
+<script src="/js/requests/logoutRequest.js"></script>
 </body>
 
 </html>
