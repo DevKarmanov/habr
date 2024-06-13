@@ -12,25 +12,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
-            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
-                </a>
-                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
-                </a>
-                <a th:href="@{/api/resume_v1/profile/{name}(name=${UserName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка">
-                </a>
-                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
-                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
-                </button>
-                <button class="d-block p-3 btn btn-white icon-link" title="Ключ регистрации новых администраторов" data-bs-toggle="modal" data-bs-placement="right" data-bs-target="#KeyChangeModal" style="background: transparent; border: none;">
-                    <svg class="bi" width="20" height="20">
-                        <use xlink:href="/images/icons/bootstrap-icons.svg#key-fill"/>
-                    </svg>
-                </button>
-            </div>
+            <div th:replace="~{/fragments/fragments :: sideMenu}"></div>
         </div>
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
             <header class="justify-content-center align-items-center mb-4">
@@ -162,26 +144,7 @@
 </div>
 
 <!-- Модальное окно ключа регистрации новых администраторов  -->
-<div class="modal fade" id="KeyChangeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Ключ для регистрации новых пользователей</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label for="adminKey">Используйте этот ключ для регистрации администратора</label>
-                <div class="input-group mb-3">
-                    <input class="form-control" id="adminKey" type="text" th:value="${adminKey}" aria-label="Здесь должен быть ключ администратора" readonly>
-                    <button class="btn btn-outline-secondary" type="button" id="copyButton">Копировать</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="generateNewKeyButton">Сгенерировать новый ключ</button>
-            </div>
-        </div>
-    </div>
-</div>
+<div th:replace="~{/fragments/fragments :: keyChangeModalWindow}"></div>
 
 <!-- CSRF Token -->
 <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -102,6 +103,21 @@ public class ComplaintController {
             try {
                 complaintService.successComplaint(description,unlockAt,userId);
                 return ResponseEntity.ok("Вы заблокировали пользователя");
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        });
+    }
+
+    @Async
+    @PatchMapping("/unblock-user")
+    public CompletableFuture<ResponseEntity<String>> unBlockUser(@RequestParam(name = "userId") Long userId,
+                                                               Authentication authentication){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                complaintService.unbanUser(userId);
+                log.info("Пользователь "+authentication.getName()+" разблокировал пользователя");
+                return ResponseEntity.ok("Вы разблокировали пользователя");
             }catch (Exception e){
                 return ResponseEntity.badRequest().body(e.getMessage());
             }

@@ -12,20 +12,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
-            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
-                </a>
-                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
-                </a>
-                <a th:href="@{/api/resume_v1/profile/{name}(name=${UserName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${UserName})}" class="img-fluid avatar" alt="Аватарка">
-                </a>
-                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
-                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
-                </button>
-            </div>
+            <div th:replace="~{/fragments/fragments :: sideMenu}"></div>
         </div>
         <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-image: url('/images/фон сайта.png'); background-size: cover; background-position: center; background-repeat: repeat;">
@@ -104,6 +91,11 @@
         </div>
     </div>
 
+<!-- Модальное окно ключа регистрации новых администраторов  -->
+<div th:replace="~{/fragments/fragments :: keyChangeModalWindow}"></div>
+
+
+<script th:if="${MyInfo.role.equals('ROLE_ADMIN')}" src="/js/requests/copyKeyAndChange.js"></script>
 <script src="/js/bootstrap.js"></script>
 <script src="/js/requests/logoutRequest.js"></script>
 </body>

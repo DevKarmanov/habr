@@ -184,4 +184,14 @@ public class ComplaintService {
             resumeRepo.delete(resume);
         });
     }
+
+    @Transactional
+    public void unbanUser(Long userId) {
+        Optional<MyUser> user = myUserRepo.findById(userId);
+        user.ifPresentOrElse(s->{
+            s.setEnable(true);
+            s.setUnlockAt(LocalDateTime.now());
+            myUserRepo.save(s);
+        },()->{throw new RuntimeException("Такой пользователь не найден");});
+    }
 }

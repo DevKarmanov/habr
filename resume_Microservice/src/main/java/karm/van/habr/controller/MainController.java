@@ -2,6 +2,7 @@ package karm.van.habr.controller;
 
 import karm.van.habr.service.AdminKeyService;
 import karm.van.habr.service.ComplaintService;
+import karm.van.habr.service.MyUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 public class MainController {
     private final ComplaintService complaintService;
     private final AdminKeyService adminKeyService;
+    private final MyUserService myUserService;
 
     @GetMapping("/welcome")
     public String welcome(){return "This is unprotected page";}
@@ -30,7 +32,8 @@ public class MainController {
     @GetMapping("/admin")
     public String pageForAdmin(Model model,Authentication authentication){
         model.addAttribute("ListOfComplaints",complaintService.getAllComplaints());
-        model.addAttribute("UserName",authentication.getName());
+        model.addAttribute("MyUserName",authentication.getName());
+        model.addAttribute("MyInfo",myUserService.getUserByName(authentication.getName()));
         model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
         return "admin-page";
     }

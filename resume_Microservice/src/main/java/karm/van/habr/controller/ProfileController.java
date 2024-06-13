@@ -1,10 +1,7 @@
 package karm.van.habr.controller;
 
 import karm.van.habr.entity.MyUser;
-import karm.van.habr.service.MyUserService;
-import karm.van.habr.service.ProfileService;
-import karm.van.habr.service.ResumeService;
-import karm.van.habr.service.UserRegistrationService;
+import karm.van.habr.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +25,7 @@ public class ProfileController {
     private final ProfileService profileService;
     private final UserRegistrationService userRegistrationService;
     private final MyUserService myUserService;
+    private final AdminKeyService adminKeyService;
 
     @GetMapping("/{name}")
     public String profilePage(@PathVariable String name,
@@ -49,6 +46,7 @@ public class ProfileController {
             model.addAttribute("MyInfo",myUser);
             model.addAttribute("ListOfSkills",profileService.getUserInfo(name).getSkills().split(","));
             model.addAttribute("MyUserName",authentication.getName());
+            model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
             return "profile";
         }
     }
@@ -156,11 +154,14 @@ public class ProfileController {
     @DeleteMapping("/{name}/delete")
     public ResponseEntity<String> deleteCard(@PathVariable(name = "name") String pathName,
                                              @RequestParam(name = "cardId") long cardId,
+                                             @RequestParam(name = "authorEmail", required = false) Optional<String> authorEmail,
+                                             @RequestParam(name = "banDescription", required = false) Optional<String> banDescription,
                                              Authentication authentication){
         try {
-            if (!pathName.equals(authentication.getName())){throw new RuntimeException("Вы не имеете права удалять");}
+            MyUser user = myUserService.getUserByName(authentication.getName());
+            if (!pathName.equals(authentication.getName()) && user.getRole().equals("ROLE_USER")){throw new RuntimeException("Вы не имеете права удалять");}
             log.info("ID карточки: "+cardId);
-            service.deleteCard(cardId);
+            service.deleteCard(cardId,authorEmail,banDescription);
             return ResponseEntity.accepted().body("Успешно удалено");
         } catch (Exception e) {
             log.info(e.getClass()+" "+e.getMessage());
@@ -175,7 +176,6 @@ public class ProfileController {
                                                                       Authentication authentication) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Map<String, String> response = new HashMap<>();
                 boolean downgrade = body.getOrDefault("downgrade", false);
                 String action = downgrade ? " понижает " : " повышает ";
                 log.info("Пользователя " + pathName + action + "администратор " + authentication.getName());

@@ -4,10 +4,7 @@ import io.minio.errors.*;
 import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.Resume;
 import karm.van.habr.exceptions.ImageTroubleException;
-import karm.van.habr.service.LikeService;
-import karm.van.habr.service.MyUserService;
-import karm.van.habr.service.ResumeService;
-import karm.van.habr.service.UserRegistrationService;
+import karm.van.habr.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -26,6 +23,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/resume_v1")
@@ -36,6 +34,7 @@ public class ResumeController {
     private final UserRegistrationService userRegistrationService;
     private final LikeService likeService;
     private final MyUserService myUserService;
+    private final AdminKeyService adminKeyService;
 
     @GetMapping("/user")
     public String pageForUser(Model model,
@@ -46,8 +45,10 @@ public class ResumeController {
         model.addAttribute("ListOfResume", service.getAllResume(offset - 1, limit, filter).getContent());
         model.addAttribute("PaginationQuantity", service.getPaginationQuantity());
         model.addAttribute("CurrentPageNumber", offset);
-        model.addAttribute("UserName", authentication.getName());
+        model.addAttribute("MyUserName", authentication.getName());
+        model.addAttribute("MyInfo",myUserService.getUserByName(authentication.getName()));
         model.addAttribute("filter", filter);
+        model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
         return "OtherResume";
     }
 
@@ -56,29 +57,40 @@ public class ResumeController {
                                 @PathVariable(name = "cardId") Long id,
                                 Authentication authentication,
                                 @RequestParam(name = "error",required = false) String error){
-        List<Comment> AllComments = service.getCommentsInPost(id);
-        AllComments.sort(Comparator.comparing(Comment::getCreateTime));
+        Optional<Resume> resume = Optional.ofNullable(service.getResume(id));
 
-        Resume resume = service.getResume(id);
+        if (resume.isPresent()){
+            List<Comment> AllComments = service.getCommentsInPost(id);
+            if (!AllComments.isEmpty()){
+                AllComments.sort(Comparator.comparing(Comment::getCreateTime));
+            }
 
-        if (!authentication.getName().equals(resume.getAuthor().getName())){
-            service.incrementViews(resume,authentication);
+            if (!authentication.getName().equals(resume.get().getAuthor().getName())){
+                service.incrementViews(resume.get(),authentication);
+            }
+
+            boolean checkLike = likeService.likeThisPost(id,authentication.getName());
+            boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),resume.get().getAuthor());
+
+
+            model.addAttribute("subscribeOnThisAuthor",checkSub);
+            model.addAttribute("cardInfo",resume.get());
+            model.addAttribute("MyUserName",authentication.getName());
+            model.addAttribute("MyInfo",myUserService.getUserByName(authentication.getName()));
+            model.addAttribute("ListOfComments",AllComments);
+            model.addAttribute("errorMessage",error);
+            model.addAttribute("likedThisPost",checkLike);
+            model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
+
+            log.info("Лайкал я этот пост? "+checkLike);
+            log.info("Список комментариев:"+AllComments);
+            return "aboutCard";
+        }else {
+            model.addAttribute("MyUserName",authentication.getName());
+            model.addAttribute("MyInfo",myUserService.getUserByName(authentication.getName()));
+            model.addAttribute("adminKey",adminKeyService.getAdminRegKey());
+            return "errorPage";
         }
-
-        boolean checkLike = likeService.likeThisPost(id,authentication.getName());
-        boolean checkSub = myUserService.checkSubOnPost(authentication.getName(),resume.getAuthor());
-
-
-        model.addAttribute("subscribeOnThisAuthor",checkSub);
-        model.addAttribute("cardInfo",resume);
-        model.addAttribute("userName",authentication.getName());
-        model.addAttribute("myInfo",myUserService.getUserByName(authentication.getName()));
-        model.addAttribute("ListOfComments",AllComments);
-        model.addAttribute("errorMessage",error);
-        model.addAttribute("likedThisPost",checkLike);
-        log.info("Лайкал я этот пост? "+checkLike);
-        log.info("Список комментариев:"+AllComments);
-        return "aboutCard";
     }
 
     @GetMapping("/images/{resumeId}/{imageId}")
