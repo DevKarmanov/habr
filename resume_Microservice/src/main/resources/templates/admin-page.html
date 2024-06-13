@@ -35,11 +35,15 @@
                                             </div>
                                         </div>
                                         <button th:if="${complaint.images.size()>1}" class="carousel-control-prev" type="button" th:data-bs-target="'#carouselExample' + ${complaint.id}" data-bs-slide="prev">
-                                            <span class="bi bi-caret-left-fill black-icon" aria-hidden="true"></span>
+                                            <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                                                <use xlink:href="/images/icons/bootstrap-icons.svg#caret-left-fill"/>
+                                            </svg>
                                             <span class="visually-hidden">Previous</span>
                                         </button>
                                         <button th:if="${complaint.images.size()>1}" class="carousel-control-next" type="button" th:data-bs-target="'#carouselExample' + ${complaint.id}" data-bs-slide="next">
-                                            <span class="bi bi-caret-right-fill black-icon" aria-hidden="true"></span>
+                                            <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                                                <use xlink:href="/images/icons/bootstrap-icons.svg#caret-right-fill"/>
+                                            </svg>
                                             <span class="visually-hidden">Next</span>
                                         </button>
                                     </div>
@@ -149,7 +153,7 @@
 <!-- CSRF Token -->
 <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-<script src="/js/requests/successOrDismissBlock.js"></script>
+<script th:if="${!ListOfComplaints.isEmpty()}" src="/js/requests/successOrDismissBlock.js"></script>
 <script src="/js/requests/copyKeyAndChange.js"></script>
 <script src="/js/bootstrap.js"></script>
 <script src="/js/requests/logoutRequest.js"></script>

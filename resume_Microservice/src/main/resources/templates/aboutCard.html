@@ -27,12 +27,16 @@
                                     <img th:src="@{/api/resume_v1/images/{resumeId}/{imageIndex}(resumeId=${cardInfo.id}, imageIndex=${imageIndex.index})}" class="d-block w-100 card-img-top rounded-top" alt="Вторичное фото карусели" loading="eager">
                                 </div>
                             </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <button th:if="${cardInfo.images.size()>1}" class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                                <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#caret-left-fill"/>
+                                </svg>
                                 <span class="visually-hidden">Previous</span>
                             </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <button th:if="${cardInfo.images.size()>1}" class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                                <svg class="bi text-black" width="25" height="24" fill="currentColor" aria-hidden="true">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#caret-right-fill"/>
+                                </svg>
                                 <span class="visually-hidden">Next</span>
                             </button>
                         </div>
