@@ -10,6 +10,7 @@ import karm.van.habr.helper.ImageService;
 import karm.van.habr.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,9 @@ public class ResumeService {
     private final ComplaintService complaintService;
     private final ComplaintRepo complaintRepo;
     private final static String BUSKET_NAME = "resume-images";
+
+    @Value("${rabbitmq.routing.key.post.name}")
+    private String postRoutingKey;
 
     @Transactional
     public Resume getResume(Long id){
@@ -141,7 +145,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public void deleteCard(Long cardId){
+    public void deleteCard(Long cardId,Optional<String> authorEmail,Optional<String> banDescription){
         Optional<Resume> resume_opt = resumeRepo.findById(cardId);
         resume_opt.ifPresentOrElse(resume -> {
             List<ImageResume> images = imageResumeRepo.findByResume(resume);
@@ -152,6 +156,7 @@ public class ResumeService {
             } catch (Exception e) {
                 throw new RuntimeException("Произошла ошибка при удалении");
             }
+            authorEmail.ifPresent(email->banDescription.ifPresent(description->notificationProducer.sendComplaintDecision(description,email,postRoutingKey,null)));
         },()->{throw new RuntimeException("Возникла проблема с удалением, проношу свои извинения");});
     }
 

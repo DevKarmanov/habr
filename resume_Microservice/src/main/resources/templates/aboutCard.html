@@ -11,25 +11,7 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-auto bg-light sticky-top">
-            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a th:if="${myInfo.role.equals('ROLE_USER')}" href="/api/resume_v1/user" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
-                </a>
-                <a th:if="${myInfo.role.equals('ROLE_ADMIN')}" href="/api/resume_v1/admin" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/logo.ico" class="img-fluid" alt="Логотип" style="max-width: 40px;">
-                </a>
-                <a href="/api/resume_v1/resumeForm" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img src="/images/ResumeAddIcon.png" class="img-fluid" alt="Добавить объявление" style="max-width: 40px;">
-                </a>
-                <a th:href="@{/api/resume_v1/profile/{name}(name=${userName})}" class="d-block p-3 link-dark text-decoration-none icon-link" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <img th:src="@{/api/resume_v1/user/image/{name}(name=${userName})}" class="img-fluid avatar" alt="Аватарка">
-                </a>
-                <button class="d-block p-3 btn btn-white icon-link" id="logoutButton" title="Выйти из аккаунта" data-bs-toggle="tooltip" data-bs-placement="right" style="background: transparent; border: none;">
-                    <img src="/images/logoutIcon.png" class="img-fluid" alt="Выйти из аккаунта" style="max-width: 40px;">
-                </button>
-            </div>
-        </div>
+        <div th:replace="~{/fragments/fragments :: sideMenu}"></div>
         <input type="hidden" id="csrfTokenForLogout" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <div class="col-sm p-3 min-vh-100" style="background-size: cover; background-position: center; background-repeat: repeat;">
             <div class="container mt-5">
@@ -61,9 +43,14 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <h2 th:text="${cardInfo.title}" class="mb-0" style="word-wrap: break-word;">Article Title</h2>
 
-                            <button th:if="${!cardInfo.author.name.equals(userName)}" type="button" class="btn btn-white btn-square ms-2" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                            <button th:if="${!cardInfo.author.name.equals(MyUserName) && MyInfo.role.equals('ROLE_USER')}" type="button" class="btn btn-white btn-square ms-2" data-bs-toggle="modal" data-bs-target="#complaintModal">
                                 <svg class="bi text-warning" width="20" height="20" fill="currentColor">
                                     <use xlink:href="/images/icons/bootstrap-icons.svg#exclamation-triangle-fill"/>
+                                </svg>
+                            </button>
+                            <button th:if="${!cardInfo.author.name.equals(MyUserName) && MyInfo.role.equals('ROLE_ADMIN')}" type="button" class="btn btn-white btn-square ms-2" data-bs-toggle="modal" data-bs-target="#blockResumeModal">
+                                <svg class="bi text-danger" width="20" height="20" fill="currentColor">
+                                    <use xlink:href="/images/icons/bootstrap-icons.svg#ban"/>
                                 </svg>
                             </button>
                         </div>
@@ -73,13 +60,13 @@
                         </p>
                         <div class="d-flex justify-content-start align-items-center gap-2">
 
-                            <a th:if="${!userName.equals(cardInfo.author.name)}" th:href="@{/api/resume_v1/profile/{name}(name=${cardInfo.author.name})}" class="d-flex align-items-center text-decoration-none">
+                            <a th:if="${!MyUserName.equals(cardInfo.author.name)}" th:href="@{/api/resume_v1/profile/{name}(name=${cardInfo.author.name})}" class="d-flex align-items-center text-decoration-none">
                                 <img th:src="@{/api/resume_v1/user/image/{name}(name=${cardInfo.author.name})}"
                                      class="rounded-circle"
                                      style="width: 40px; height: 40px; object-fit: cover;"
                                      alt="Avatar" />
                             </a>
-                            <div th:if="${!cardInfo.author.name.equals(userName)}" class="d-flex align-items-center">
+                            <div th:if="${!cardInfo.author.name.equals(MyUserName)}" class="d-flex align-items-center">
                                 <form th:if="${!likedThisPost}" id="addLikeForm" class="mb-0 d-flex align-items-center me-3">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken">
                                     <input type="hidden" name="cardId" th:value="${cardInfo.id}">
@@ -101,13 +88,13 @@
                                     </button>
                                 </form>
                             </div>
-                            <div th:if="${cardInfo.author.name.equals(userName)}" th:text="${'Количество лайков: '+cardInfo.likedResumes.size()}"></div>
+                            <div th:if="${cardInfo.author.name.equals(MyUserName)}" th:text="${'Количество лайков: '+cardInfo.likedResumes.size()}"></div>
                             <button type="button" class="btn btn-white ms-2 mb-0 d-flex align-items-center create-comment" data-bs-toggle="modal" data-bs-target="#PostCommentModal">
                                 <svg class="bi text-primary" width="20" height="20" fill="currentColor">
                                     <use xlink:href="/images/icons/bootstrap-icons.svg#chat-right-text-fill"/>
                                 </svg>
                             </button>
-                            <form th:if="${!cardInfo.author.name.equals(userName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post">
+                            <form th:if="${!cardInfo.author.name.equals(MyUserName) && !subscribeOnThisAuthor}" id="subscribeForm" action="/api/resume_v1/user/subscribe" method="post">
                                 <button type="submit" class="btn btn-primary ms-2 mb-0 d-flex align-items-center subscribe-button">
                                     <svg class="bi text-light" width="20" height="20" fill="currentColor">
                                         <use xlink:href="/images/icons/bootstrap-icons.svg#plus"/>
@@ -117,7 +104,7 @@
                                 <input type="hidden" name="subscribeOn" th:value="${cardInfo.author.id}">
                             </form>
 
-                            <form th:if="${!cardInfo.author.name.equals(userName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe">
+                            <form th:if="${!cardInfo.author.name.equals(MyUserName) && subscribeOnThisAuthor}" id="unsubscribeForm" action="/api/resume_v1/user/unsubscribe">
                                 <button type="submit" class="btn btn-danger ms-2 mb-0 d-flex align-items-center unsubscribe-button">
                                     <svg class="bi text-light" width="20" height="20" fill="currentColor">
                                         <use xlink:href="/images/icons/bootstrap-icons.svg#x-lg"/>
@@ -127,7 +114,7 @@
                                 <input type="hidden" name="unsubscribeOn" th:value="${cardInfo.author.id}">
                             </form>
                         </div>
-                        <p th:if="${!userName.equals(cardInfo.author.name)}" class="text-muted mb-0" th:text="${cardInfo.author.roleInCommand}">Web designer</p>
+                        <p th:if="${!MyUserName.equals(cardInfo.author.name)}" class="text-muted mb-0" th:text="${cardInfo.author.roleInCommand}">Web designer</p>
                     </div>
                 </div>
             </div>
@@ -146,12 +133,12 @@
                                 <a th:href="${'#'+comment.parentComment.id}" th:text="${comment.parentComment.user.name}" class="comment-link text-decoration-none"></a>
                             </span>
                             <div class="ms-auto"> <!-- Этот блок обеспечит размещение кнопок справа -->
-                                <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#successModal'+comment.id}">
+                                <button th:if="${comment.user.name.equals(MyUserName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#successModal'+comment.id}">
                                     <svg class="bi" width="20" height="20">
                                         <use xlink:href="/images/icons/bootstrap-icons.svg#trash-fill"/>
                                     </svg>
                                 </button>
-                                <button th:if="${comment.user.name.equals(userName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#editModal'+comment.id}">
+                                <button th:if="${comment.user.name.equals(MyUserName)}" type="button" class="btn btn-white me-2" data-bs-toggle="modal" th:data-bs-target="${'#editModal'+comment.id}">
                                     <svg class="bi" width="20" height="20">
                                         <use xlink:href="/images/icons/bootstrap-icons.svg#pencil-square"/>
                                     </svg>
@@ -220,11 +207,11 @@
     <div class="modal-dialog modal-dialog-centered text-center d-flex justify-content-center">
         <div class="modal-content w-75">
             <div class="modal-body p-4 position-relative">
-                <img th:src="@{/api/resume_v1/user/image/{name}(name=${userName})}" alt="avatar" class="rounded-circle position-absolute top-0 start-50 translate-middle" style="width: 100px; height: 100px;" />
+                <img th:src="@{/api/resume_v1/user/image/{name}(name=${MyUserName})}" alt="avatar" class="rounded-circle position-absolute top-0 start-50 translate-middle" style="width: 100px; height: 100px;" />
                 <form id="createCommentForm">
                     <div>
                         <input th:if="${errorMessage}" th:value="${errorMessage}" type="hidden">
-                        <h5 th:text="${userName}" class="pt-5 my-3">Maria Doe</h5>
+                        <h5 th:text="${MyUserName}" class="pt-5 my-3">Maria Doe</h5>
                         <input type="hidden" th:value="${cardInfo.id}" name="cardId">
                         <input type="hidden" id="replyToCommentId" name="replyToCommentId">
                         <input type="hidden" th:value="${_csrf.token}" th:name="${_csrf.parameterName}">
@@ -243,7 +230,7 @@
 </div>
 
 <!-- Модальное окно жалобы -->
-<div class="modal fade" id="complaintModal" tabindex="-1" aria-hidden="true">
+<div th:if="${!cardInfo.author.name.equals(MyInfo.name) && MyInfo.role.equals('ROLE_USER')}" class="modal fade" id="complaintModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -262,7 +249,7 @@
                     </div>
                 </div>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <input type="hidden" name="author_name" th:value="${userName}">
+                <input type="hidden" name="author_name" th:value="${MyUserName}">
                 <input type="hidden" name="inspect_card_id" th:value="${cardInfo.id}">
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-danger">Отправить жалобу</button>
@@ -272,15 +259,46 @@
     </div>
 </div>
 
+<!-- Модальное окно удаления поста -->
+<div th:if="${!cardInfo.author.name.equals(MyInfo.name) && MyInfo.role.equals('ROLE_ADMIN')}" class="modal fade" id="blockResumeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Вы можете удалить эту публикацию</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteCardForm" th:action="@{/api/resume_v1/profile/{name}/delete(name=${cardInfo.author.name})}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="banDescription" class="form-label">Опишите причину удаления</label>
+                        <textarea class="form-control" id="banDescription" name="banDescription" rows="3" required></textarea>
+                    </div>
+                </div>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="authorEmail" th:value="${cardInfo.author.email}">
+                <input type="hidden" name="cardId" th:value="${cardInfo.id}">
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- Модальное окно ключа регистрации новых администраторов  -->
+<div th:replace="~{/fragments/fragments :: keyChangeModalWindow}"></div>
+
+
+<script th:if="${MyInfo.role.equals('ROLE_ADMIN')}" src="/js/requests/copyKeyAndChange.js"></script>
 <script src="/js/bootstrap.js"></script>
-<script th:if="${!subscribeOnThisAuthor}" src="/js/requests/SubscribeRequest.js"></script>
-<script th:if="${subscribeOnThisAuthor}" src="/js/requests/UnSubscribeForm.js"></script>
-<script th:if="${!likedThisPost}" src="/js/requests/AddLike.js"></script>
-<script th:if="${likedThisPost}" src="/js/requests/RemoveLike.js"></script>
-<script th:if="${!cardInfo.author.name.equals(userName)}" src="/js/requests/complaintRequest.js"></script>
+<script th:if="${!subscribeOnThisAuthor && !cardInfo.author.name.equals(MyInfo.name)}" src="/js/requests/SubscribeRequest.js"></script>
+<script th:if="${subscribeOnThisAuthor && !cardInfo.author.name.equals(MyInfo.name)}" src="/js/requests/UnSubscribeForm.js"></script>
+<script th:if="${!likedThisPost && !cardInfo.author.name.equals(MyInfo.name)}" src="/js/requests/AddLike.js"></script>
+<script th:if="${likedThisPost && !cardInfo.author.name.equals(MyInfo.name)}" src="/js/requests/RemoveLike.js"></script>
+<script th:if="${!cardInfo.author.name.equals(MyUserName) && MyInfo.role.equals('ROLE_USER')}" src="/js/requests/complaintRequest.js"></script>
 <script src="/js/requests/CommentRequests.js"></script>
 <script src="/js/requests/logoutRequest.js"></script>
+<script th:if="${!cardInfo.author.name.equals(MyUserName) && MyInfo.role.equals('ROLE_ADMIN')}" src="/js/requests/deleteCardRequest.js"></script>
 </body>
 
 </html>

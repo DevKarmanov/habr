@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function() {
         form.addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            // Добавьте это
             const confirmDelete = confirm("Вы действительно хотите удалить?");
             if (!confirmDelete) {
                 return; // Если пользователь нажал Отмена, просто вернитесь и не продолжайте удаление
@@ -25,18 +24,14 @@ document.addEventListener("DOMContentLoaded", function() {
             try {
                 const response = await fetch(form.action, options);
                 if (response.ok) {
-                    const name = form.getAttribute('action').split('/')[4];
-                    window.location.href = `/api/resume_v1/profile/${name}`;
+                    location.reload(); // Перезагрузить страницу после успешного удаления
                 } else {
                     const errorMessage = await response.text();
-                    const name = form.getAttribute('action').split('/')[4];
-                    window.location.href = `/api/resume_v1/profile/${name}?error=${encodeURIComponent(errorMessage)}`;
+                    alert(`Ошибка: ${errorMessage}`); // Показать сообщение об ошибке
                 }
             } catch (error) {
                 console.error("Ошибка при выполнении запроса:", error);
-                const errorMessage = error.message;
-                const name = form.getAttribute('action').split('/')[4];
-                window.location.href = `/api/resume_v1/profile/${name}?error=${encodeURIComponent(errorMessage)}`;
+                alert(`Ошибка: ${error.message}`); // Показать сообщение об ошибке
             }
         });
     });
