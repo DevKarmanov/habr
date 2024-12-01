@@ -35,10 +35,11 @@ public class CommentController {
     @Async
     @DeleteMapping("/delete-comment")
     public CompletableFuture<ResponseEntity<String>> deleteComment(@RequestParam(name = "commentId") Long commentId,
-                                                                   @RequestParam(name = "cardId") Long cardId){
+                                                                   @RequestParam(name = "cardId") Long cardId,
+                                                                   Authentication authentication){
         return CompletableFuture.supplyAsync(()->{
             try {
-                commentService.deleteComment(commentId,cardId);
+                commentService.deleteComment(commentId,authentication,cardId);
                 return ResponseEntity.ok("Успех");
             }catch (Exception e){
                 return ResponseEntity.badRequest().body(e.getMessage());
@@ -50,10 +51,11 @@ public class CommentController {
     @PatchMapping("/patch-comment")
     public CompletableFuture<ResponseEntity<String>> patchComment(@RequestParam(name = "commentId") Long commentId,
                                                                   @RequestParam(name = "text") String commentText,
-                                                                  @RequestParam(name = "cardId") Long cardId) {
+                                                                  @RequestParam(name = "cardId") Long cardId,
+                                                                  Authentication authentication) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                commentService.patchComment(commentId, commentText, cardId);
+                commentService.patchComment(commentId, authentication, commentText, cardId);
                 return ResponseEntity.ok("Успех");
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(e.getMessage());

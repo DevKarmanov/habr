@@ -8,6 +8,9 @@ import karm.van.habr.repo.MyUserRepo;
 import karm.van.habr.repo.ResumeRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +26,6 @@ public class CommentService {
     private final ResumeRepo resumeRepo;
     private final MyUserRepo myUserRepo;
 
-
-    //TODO: кэширование комментариев @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
     public void createComment(String text, Long cardId, Authentication authentication, Long replyToCommentId) {
         Optional<Resume> resume = resumeRepo.findById(cardId);
@@ -61,16 +62,13 @@ public class CommentService {
         commentRepo.save(comment);
     }
 
-
-    //TODO: кэширование комментариев @CacheEvict(value = "comments", key = "#cardId")
     @Transactional
-    public void deleteComment(Long commentId,Long cardId) {
+    public void deleteComment(Long commentId, Authentication authentication, Long cardId) {
         commentRepo.deleteById(commentId);
     }
 
-    //TODO: кэширование комментариев @CacheEvict(value = "comments",key = "#cardId")
     @Transactional
-    public void patchComment(Long commentId, String commentText, Long cardId) {
+    public void patchComment(Long commentId, Authentication authentication, String commentText, Long cardId) {
         Optional<Comment> commentOptional = commentRepo.findById(commentId);
         commentOptional.ifPresentOrElse(comment->{
             if (!commentText.trim().isEmpty()){

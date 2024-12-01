@@ -62,6 +62,7 @@ public class UserRegistrationService {
 
     private void saveImageAndUser(String userName, String email, String password, MultipartFile file, String user_role) throws ImageTroubleException {
         log.info("Вызван метод saveImageAndUser");
+        System.out.println("Вызван метод saveImageAndUser");
         try {
             byte[] imageBytes = imageCompressionService.compressImage(file.getBytes(),file.getContentType());
             if (imageBytes==null){
