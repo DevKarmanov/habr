@@ -70,6 +70,7 @@ public class RegistrationController {
                                        @RequestParam(name = "admin_key",required = false) Optional<String> admin_key) {
 
         try {
+            System.out.println("Вызван контроллер регистрации пользователя");
             if (admin_key.isPresent() && !admin_key.get().isEmpty() && admin_key.get().equals(adminKeyService.getAdminRegKey())){
                 userRegistrationService.saveUser(userName,email,password,file,"ROLE_ADMIN");
             } else if (admin_key.isPresent() && !admin_key.get().isEmpty() && !admin_key.get().equals(adminKeyService.getAdminRegKey())) {

@@ -1,6 +1,7 @@
 package karm.van.habr.service;
 
 import io.minio.errors.*;
+import jakarta.persistence.EntityNotFoundException;
 import karm.van.habr.entity.Comment;
 import karm.van.habr.entity.ImageResume;
 import karm.van.habr.entity.MyUser;
@@ -11,6 +12,10 @@ import karm.van.habr.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -108,32 +113,29 @@ public class ResumeService {
                 ()->{throw new RuntimeException("Такая карточка не найдена");});
     }
     @Transactional
-    public void patchResume(Authentication authentication,String login,Optional<String> title, Optional<String> description, Optional<MultipartFile[]> files, Long cardId) throws ImageTroubleException {
-        if (files.isPresent() && files.get().length>4){
+    public void patchResume(Authentication authentication, String login, Optional<String> title, Optional<String> description, Optional<MultipartFile[]> files, Long cardId) throws ImageTroubleException {
+        if (files.isPresent() && files.get().length > 4) {
             throw new ImageTroubleException("Слишком много изображений");
-        }else if (!authentication.getName().equals(login)){
+        } else if (!authentication.getName().equals(login)) {
             throw new RuntimeException("Вы не имеете права изменять чужие публикации");
         }
         Optional<Resume> resume_opt = resumeRepo.findById(cardId);
 
-        resume_opt.ifPresent(resume -> {
-            if (title.isPresent() && !title.get().trim().isEmpty()){
+        if (resume_opt.isPresent()) {
+            Resume resume = resume_opt.get();
+            if (title.isPresent() && !title.get().trim().isEmpty()) {
                 resume.setTitle(title.get().trim());
             }
-            if (description.isPresent() && !description.get().trim().isEmpty()){
+            if (description.isPresent() && !description.get().trim().isEmpty()) {
                 resume.setDescription(description.get().trim());
             }
             List<ImageResume> resumes = imageResumeRepo.findByResume(resume);
-            if (files.isPresent() && resumes.size()+files.get().length-1>=4){
-                try {
-                    throw new ImageTroubleException("У вас уже "+resumes.size()+" из 4-х изображений. Добавьте поменьше");
-                } catch (ImageTroubleException e) {
-                    throw new RuntimeException(e.getMessage());
-                }
+            if (files.isPresent() && resumes.size() + files.get().length - 1 >= 4) {
+                throw new ImageTroubleException("У вас уже " + resumes.size() + " из 4-х изображений. Добавьте поменьше");
             }
-            if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0){
+            if (files.isPresent() && files.get().length > 0 && files.get()[0].getSize() > 0) {
                 try {
-                    ImageService.imageSave(files.get(), resume,BUSKET_NAME,minioServer,imageResumeRepo,imageCompressionService);
+                    ImageService.imageSave(files.get(), resume, BUSKET_NAME, minioServer, imageResumeRepo, imageCompressionService);
                 } catch (ImageTroubleException | InsufficientDataException | ServerException | ErrorResponseException |
                          IOException | NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException |
                          XmlParserException | InternalException e) {
@@ -141,7 +143,9 @@ public class ResumeService {
                 }
             }
             resumeRepo.save(resume);
-        });
+        } else {
+            throw new EntityNotFoundException("Резюме с id " + cardId + " не найдено");
+        }
     }
 
     @Transactional
@@ -167,9 +171,6 @@ public class ResumeService {
         return result>0?(int)Math.ceil(result):1;
     }
 
-
-
-    //@Cacheable(value = "resumes", key = "#offset +'-'+ #limit +'-'+ #filter")
     @Transactional
     public Page<Resume> getAllResume(int offset, int limit,String filter){
         PageRequest pageRequest = PageRequest.of(offset,limit);
@@ -181,7 +182,6 @@ public class ResumeService {
 
     }
 
-    //TODO: кэширование комментариев @Cacheable(value = "comments", key = "#id")
     @Transactional
     public List<Comment> getCommentsInPost(Long id) {
         Optional<Resume> resume = resumeRepo.findById(id);
@@ -202,4 +202,5 @@ public class ResumeService {
                     }
                 }, ()->{throw new RuntimeException("Такой пользователь не найден");});
     }
+
 }

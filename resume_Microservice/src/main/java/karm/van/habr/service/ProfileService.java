@@ -18,7 +18,6 @@ public class ProfileService {
     private final SettingsRepo settingsRepo;
 
     @Transactional
-    //@Cacheable(value = "userProfile", key = "#name")
     public MyUser getUserInfo(String name){
         return myUserRepo.findByName(name).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
