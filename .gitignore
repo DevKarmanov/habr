@@ -10,6 +10,8 @@ target/
 /minio-data/resume-image
 /minio-data/resume-images
 
+/minio-data/.minio.sys
+
 ### STS ###
 .apt_generated
 .classpath
