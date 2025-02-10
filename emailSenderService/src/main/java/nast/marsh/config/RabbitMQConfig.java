@@ -1,6 +1,5 @@
 package nast.marsh.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -9,11 +8,9 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
-public class rabbitMQConfig {
+public class RabbitMQConfig {
     @Value("${rabbitmq.queue.email.name}")
     private String emailQueueName;
 
