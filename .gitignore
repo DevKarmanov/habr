@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+
+/minio-data/complaint-images
+/minio-data/profile-images
+/minio-data/resume-image
+/minio-data/resume-images
+
 ### STS ###
 .apt_generated
 .classpath
